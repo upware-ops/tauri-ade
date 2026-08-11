@@ -24,7 +24,7 @@ All data goes through Rust for type safety and security. Use TanStack Query on t
 ## File Locations
 
 ```
-~/Library/Application Support/com.myapp.app/  (macOS)
+~/Library/Application Support/com.upware-ops.tauri-ade/  (macOS)
 ├── preferences.json                          # App preferences
 └── recovery/                                 # Emergency data
     └── *.json

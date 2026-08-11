@@ -1,0 +1,16 @@
+"$schema" = "https://conductor.build/schemas/settings.repo.schema.json"
+
+[scripts]
+setup = """
+npm ci
+cargo fetch --locked --manifest-path src-tauri/Cargo.toml
+"""
+# Conductor owns the worktree and stops its run process; setup creates no external resources.
+archive = "true"
+run_mode = "nonconcurrent"
+
+[scripts.run.app]
+available_in = [ "local" ]
+command = "npm run tauri:dev"
+default = true
+icon = "play"

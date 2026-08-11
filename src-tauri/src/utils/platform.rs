@@ -1,7 +1,7 @@
 //! Cross-platform utilities for handling platform-specific behavior.
 //!
-//! These utilities are provided for apps built on this template.
-//! They may not be used within the template itself.
+//! These utilities support cross-platform application features.
+//! They may not be used by the current features yet.
 //!
 //! This module provides utilities for writing cross-platform Rust code in Tauri apps.
 //! Use conditional compilation (`#[cfg(target_os = "...")]`) for platform-specific behavior.
@@ -31,7 +31,7 @@
 //! }
 //! ```
 
-// Allow unused code - these utilities are for apps built on this template
+// Allow unused code while these cross-platform utilities await their first call sites.
 #![allow(dead_code)]
 
 use std::path::Path;

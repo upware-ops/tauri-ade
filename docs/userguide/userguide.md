@@ -1,8 +1,8 @@
-# App User Guide
+# Tauri ADE User Guide
 
 ## Getting Started
 
-Welcome! This guide covers the core features available in the app.
+This guide covers the core features available in Tauri ADE.
 
 ## Keyboard Shortcuts
 
@@ -54,12 +54,8 @@ All menu items have keyboard shortcuts and are also available in the command pal
 
 ## Updates
 
-The app checks for updates automatically:
+Update checks are wired to GitHub Releases but require the release signing key described in [the release guide](../developer/releases.md) before distribution:
 
 - Manual check: App menu → Check for Updates
 - Updates download from GitHub releases
 - You'll be notified when updates are available
-
----
-
-_This user guide should be expanded as new features are added to the app._

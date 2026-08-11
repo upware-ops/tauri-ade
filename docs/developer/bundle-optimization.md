@@ -143,7 +143,7 @@ Only include permissions you use in `src-tauri/capabilities/desktop.json`.
 ```bash
 # Rust binary size
 cd src-tauri && cargo build --release
-ls -lah target/release/tauri-app
+ls -lah target/release/tauri-ade
 
 # Frontend bundle
 npm run build && du -sh dist/

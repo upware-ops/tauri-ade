@@ -17,7 +17,7 @@ The release system provides:
 
 ```bash
 npm install -g @tauri-apps/cli
-tauri signer generate -w ~/.tauri/myapp.key
+tauri signer generate -w ~/.tauri/tauri-ade.key
 # Outputs private key (saved) and public key (displayed)
 ```
 
@@ -25,7 +25,7 @@ tauri signer generate -w ~/.tauri/myapp.key
 
 Add these secrets (Settings → Secrets and variables → Actions):
 
-- `TAURI_PRIVATE_KEY`: Content of `~/.tauri/myapp.key`
+- `TAURI_PRIVATE_KEY`: Content of `~/.tauri/tauri-ade.key`
 - `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`: Password you set (if any)
 
 ### 3. Update Configuration
@@ -36,11 +36,9 @@ Add these secrets (Settings → Secrets and variables → Actions):
 {
   "plugins": {
     "updater": {
-      "active": true,
       "endpoints": [
-        "https://github.com/YOUR_USERNAME/YOUR_REPO/releases/latest/download/latest.json"
+        "https://github.com/upware-ops/tauri-ade/releases/latest/download/latest.json"
       ],
-      "dialog": false,
       "pubkey": "YOUR_PUBLIC_KEY_FROM_STEP_1"
     }
   }

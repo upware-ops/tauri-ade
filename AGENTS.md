@@ -2,7 +2,7 @@
 
 ## Overview
 
-This repository is a template with sensible defaults for building Tauri React apps.
+Tauri ADE is an Agentic Development Environment proof of concept built with Tauri, React, and TypeScript.
 
 ## Core Rules
 
@@ -12,6 +12,13 @@ This repository is a template with sensible defaults for building Tauri React ap
 - Review `docs/developer/architecture-guide.md` for high-level patterns
 - Check `docs/developer/README.md` for the full documentation index
 - Check git status and project structure
+
+### Conductor Workspaces
+
+- Shared workspace lifecycle settings live in `.conductor/settings.toml`
+- Setup installs the locked npm and Cargo dependencies inside each worktree
+- Tauri runs are nonconcurrent because workspaces share the app identifier, application data, single-instance lock, global shortcut, and fixed development port
+- Archive intentionally performs no cleanup outside the worktree; never delete shared application data as workspace teardown
 
 ### Development Practices
 
@@ -111,7 +118,7 @@ i18n.t('key')                 // Or call directly for occasional use
 ### Documentation & Versions
 
 - **Context7 First**: Always use Context7 for framework docs before WebSearch
-- **Version Requirements**: Tauri v2.x, shadcn/ui v4.x, Tailwind v4.x, React 19.x, Zustand v5.x, Vite v7.x, Vitest v4.x
+- **Version Requirements**: Tauri v2.x, shadcn/ui v4.x, Tailwind v4.x, React 19.x, Zustand v5.x, Vite v8.x, Vitest v4.x
 
 ## Developer Documentation
 
@@ -130,7 +137,6 @@ These are specific to Claude Code but documented here for context.
 
 ### Skills
 
-- `/init` - One-time template initialization (includes package manager selection)
 - `/check` - Check work against architecture, run `npm run check:all`, suggest commit message
 - `/cleanup` - Run static analysis (knip, jscpd, check:all), get structured recommendations
 - `/change-package-manager <bun|pnpm|npm>` - Switch package manager across all config, scripts, docs, CI, and AI instructions

@@ -191,7 +191,7 @@ These plugins aren't included by default but are commonly needed:
 | **shell**      | Need to spawn child processes or run terminal commands      |
 | **http**       | Making API calls that need to bypass CORS                   |
 | **autostart**  | Utility apps that should launch at system startup           |
-| **deep-link**  | Custom URL schemes (myapp://path)                           |
+| **deep-link**  | Custom URL schemes (tauri-ade://path)                       |
 | **sql**        | Local SQLite database for structured data                   |
 | **positioner** | Tray apps or floating windows that need precise positioning |
 

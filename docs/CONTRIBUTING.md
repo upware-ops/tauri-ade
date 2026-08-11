@@ -6,17 +6,17 @@ Thank you for your interest in contributing!
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) (v18+)
+- [Node.js](https://nodejs.org/) (v20+)
 - [Rust](https://rustup.rs/) (latest stable)
 - Familiarity with React, TypeScript, and Rust
 
 ### Setup
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/YOUR_REPO.git
-cd YOUR_REPO
+git clone https://github.com/upware-ops/tauri-ade.git
+cd tauri-ade
 npm install
-npm run dev
+npm run tauri:dev
 npm run check:all
 ```
 
