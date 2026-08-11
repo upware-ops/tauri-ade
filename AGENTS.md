@@ -17,7 +17,7 @@ Tauri ADE is an Agentic Development Environment proof of concept built with Taur
 
 - Shared workspace lifecycle settings live in `.conductor/settings.toml`
 - Setup installs the locked npm and Cargo dependencies inside each worktree
-- Tauri runs are nonconcurrent because workspaces share the app identifier, application data, single-instance lock, global shortcut, and fixed development port
+- Tauri runs concurrently with Conductor's allocated port and a workspace-specific development identifier
 - Archive intentionally performs no cleanup outside the worktree; never delete shared application data as workspace teardown
 
 ### Development Practices
