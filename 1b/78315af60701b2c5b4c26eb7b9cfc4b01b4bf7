@@ -1,0 +1,23 @@
+AGENTS.md
+  s_28fc353919ab8c::t_3a205c54dfee27 20
+.conductor/settings.toml
+  s_28fc353919ab8c::t_3a205c54dfee27 10,14-17
+src-tauri/src/lib.rs
+  s_28fc353919ab8c::t_3a205c54dfee27 128,131-133
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.18",
+  "base_commit_sha": "1b78315af60701b2c5b4c26eb7b9cfc4b01b4bf7",
+  "prompts": {},
+  "sessions": {
+    "s_28fc353919ab8c": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ff0d1-dc46-7e00-9c9d-f101623ed781",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Pavlo Sheiman <pavel.sheiman@gmail.com>"
+    }
+  }
+}
