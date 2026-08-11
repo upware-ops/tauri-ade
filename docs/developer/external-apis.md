@@ -140,7 +140,7 @@ use keyring::Entry;
 #[tauri::command]
 #[specta::specta]
 pub fn save_auth_token(token: String) -> Result<(), String> {
-    let entry = Entry::new("myapp", "auth_token")
+    let entry = Entry::new("tauri-ade", "auth_token")
         .map_err(|e| format!("Keyring error: {e}"))?;
     entry.set_password(&token)
         .map_err(|e| format!("Failed to save token: {e}"))
@@ -149,7 +149,7 @@ pub fn save_auth_token(token: String) -> Result<(), String> {
 #[tauri::command]
 #[specta::specta]
 pub fn get_auth_token() -> Result<Option<String>, String> {
-    let entry = Entry::new("myapp", "auth_token")
+    let entry = Entry::new("tauri-ade", "auth_token")
         .map_err(|e| format!("Keyring error: {e}"))?;
     match entry.get_password() {
         Ok(token) => Ok(Some(token)),
@@ -165,7 +165,7 @@ pub fn get_auth_token() -> Result<Option<String>, String> {
 #[tauri::command]
 #[specta::specta]
 pub async fn fetch_protected_data() -> Result<Data, String> {
-    let entry = Entry::new("myapp", "auth_token")
+    let entry = Entry::new("tauri-ade", "auth_token")
         .map_err(|e| format!("Keyring error: {e}"))?;
     let token = entry.get_password()
         .map_err(|_| "Not authenticated")?;

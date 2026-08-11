@@ -1,10 +1,10 @@
-# Tauri React Template
+# Tauri ADE
 
-A "batteries-included" template for building production-ready desktop applications with **Tauri v2**, **React**, and **TypeScript**. Designed with opinionated patterns that help both human developers and AI coding agents build well-architected apps from the start.
+An Agentic Development Environment proof of concept built with **Tauri v2**, **React**, and **TypeScript**.
 
-## Why This Template?
+## Foundation
 
-Most Tauri starters give you a blank canvas. This template gives you a **working application** with patterns already established:
+The repository starts with a working desktop application and established engineering patterns:
 
 - **Type-safe Rust-TypeScript bridge** via tauri-specta.
 - **Performance patterns enforced by tooling** - all the usual linting plus ast-grep for common anti-patterns
@@ -16,7 +16,7 @@ Most Tauri starters give you a blank canvas. This template gives you a **working
 
 | Layer    | Technologies                                    |
 | -------- | ----------------------------------------------- |
-| Frontend | React 19, TypeScript, Vite 7                    |
+| Frontend | React 19, TypeScript, Vite 8                    |
 | UI       | shadcn/ui v4, Tailwind CSS v4, Lucide React     |
 | State    | Zustand v5, TanStack Query v5                   |
 | Backend  | Tauri v2, Rust                                  |
@@ -25,7 +25,7 @@ Most Tauri starters give you a blank canvas. This template gives you a **working
 
 ## What's Already Built
 
-The template includes a working application with these features implemented:
+The current application foundation includes:
 
 ### Core Features
 
@@ -37,13 +37,13 @@ The template includes a working application with these features implemented:
 - **Collapsible Sidebars** - Empty left and right sidebars with state persistence via resizable panels
 - **Theme System** - Light/dark mode with system preference detection, synced across windows
 - **Notifications** - Toast notifications for in-app feedback, plus native system notifications
-- **Auto-updates** - Tauri updater plugin configured with GitHub Releases integration and update checking on launch
+- **Updater integration** - GitHub Releases wiring and update checks, pending release signing-key setup
 - **Logging** - Structured logging utilities for both Rust and TypeScript with consistent formatting
 - **Crash Recovery** - Emergency data persistence for recovering unsaved work after unexpected exits
 
 ### Architecture Patterns
 
-- **Three-layer state management** - Clear decision tree: `useState` (component) → `Zustand` (global UI) → `TanStack Query` (persistent data "not owned by the app)
+- **Three-layer state management** - Clear decision tree: `useState` (component) → `Zustand` (global UI) → `TanStack Query` (persistent data)
 - **Event-driven Rust-React bridge** - Menus, shortcuts, and command palette all route through the same command system
 - **React Compiler** - Automatic memoization means no manual `useMemo`/`useCallback` needed
 
@@ -79,9 +79,9 @@ Platform detection utilities, platform-specific UI strings ("Reveal in Finder" v
 | opener            | Open URLs/files with default app |
 | tauri-nspanel     | macOS floating panel behavior    |
 
-## AI-Ready Development
+## Agent Development
 
-This template is designed to work well with AI coding agents like Claude Code:
+The repository is configured for human and AI-assisted development:
 
 - **Comprehensive documentation** in `docs/developer/` covering all patterns. Human readable but really designed to explain the "why" of certain patterns to AI agents. Not slop.
 - **Claude Code integration** - Custom commands (`/check`, `/cleanup`) and a couple of specialized agents
@@ -89,25 +89,22 @@ This template is designed to work well with AI coding agents like Claude Code:
 
 ## Getting Started
 
-See **[Using This Template](docs/USING_THIS_TEMPLATE.md)** for setup instructions and workflow guidance.
-
 ### Quick Start
 
 ```bash
-# Prerequisites: Node.js 18+, Rust (latest stable)
+# Prerequisites: Node.js 20+, Rust (latest stable)
 # See https://tauri.app/start/prerequisites/ for platform-specific deps
 
-git clone <your-repo>
-cd your-app
+git clone https://github.com/upware-ops/tauri-ade.git
+cd tauri-ade
 npm install
-npm run dev
+npm run tauri:dev
 ```
 
 ## Documentation
 
 - **[Developer Docs](docs/developer/)** - Architecture, patterns, and detailed guides
-- **[User Guide](docs/userguide/)** - End-user documentation template
-- **[Using This Template](docs/USING_THIS_TEMPLATE.md)** - Setup and workflow guide
+- **[User Guide](docs/userguide/)** - End-user documentation
 
 ## License
 

@@ -125,10 +125,12 @@ pub fn run() {
                     .unwrap_or(DEFAULT_QUICK_PANE_SHORTCUT);
 
                 log::info!("Registering quick pane shortcut: {shortcut_to_register}");
-                commands::quick_pane::register_quick_pane_shortcut(
+                if let Err(e) = commands::quick_pane::register_quick_pane_shortcut(
                     app.handle(),
                     shortcut_to_register,
-                )?;
+                ) {
+                    log::warn!("Failed to register quick pane shortcut: {e}");
+                }
             }
 
             // Create the quick pane window (hidden) - must be done on main thread

@@ -1,6 +1,6 @@
 ---
 name: change-package-manager
-description: Switch the project's package manager between npm, bun, and pnpm. Updates all config, scripts, documentation, CI workflows, and AI instructions. Use when initializing from template or switching package managers.
+description: Switch the project's package manager between npm, bun, and pnpm. Updates all config, scripts, documentation, CI workflows, and AI instructions.
 user-invocable: true
 argument-hint: <bun|pnpm|npm>
 allowed-tools: [Read, Edit, Write, Bash, Glob, Grep]
@@ -73,7 +73,6 @@ Read `.github/workflows/release.yml` and apply the appropriate pattern:
 Update these files, replacing PM commands contextually:
 
 - **`AGENTS.md`**: Update rule 0 (the "Use npm only" line) to reflect the new PM. For example: `0. **Use bun only**: This project uses \`bun\`, NOT \`npm\`. Always use \`bun install\`, \`bun run\`, etc.`
-- **`.claude/skills/init/SKILL.md`**: Replace PM commands in verification/next-steps sections
 - **`.claude/skills/check/SKILL.md`**: Replace PM commands
 - **`.claude/agents/cleanup-analyzer.md`**: Replace PM commands
 - **`.claude/settings.local.json`**: Update `Bash(npm ...)` permission patterns to use the new PM (e.g. `Bash(bun run format:*)`)
@@ -84,7 +83,6 @@ Use Grep to find all remaining references to the old PM across the codebase. Upd
 
 Key files to check:
 - `README.md`
-- `docs/USING_THIS_TEMPLATE.md`
 - `docs/CONTRIBUTING.md`
 - `docs/SECURITY.md`
 - `docs/tasks.md`

@@ -2,7 +2,7 @@ import { platform, type Platform } from '@tauri-apps/plugin-os'
 import { logger } from '@/lib/logger'
 
 /**
- * Supported desktop platforms for this template.
+ * Supported desktop platforms for this app.
  * Other platforms (iOS, Android) are not supported.
  */
 export type AppPlatform = 'macos' | 'windows' | 'linux'

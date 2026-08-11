@@ -25,7 +25,7 @@ export default defineConfig(async () => ({
     },
   },
   build: {
-    chunkSizeWarningLimit: 600, // Prevent warnings for template's bundled components
+    chunkSizeWarningLimit: 600, // Prevent warnings for bundled components
     rolldownOptions: {
       input: {
         main: resolve(__dirname, 'index.html'),
