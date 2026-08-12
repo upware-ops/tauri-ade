@@ -1,0 +1,230 @@
+.design-sync/docs/AlertDialog.md
+  s_f0dc335a5cf5d7::t_0bb86d3c757794 1-3
+.design-sync/build-css.mjs
+  s_f0dc335a5cf5d7::t_7450a4ad28ec68 1-25
+.design-sync/docs/DropdownMenu.md
+  s_f0dc335a5cf5d7::t_0bb86d3c757794 1-3
+.design-sync/previews/NativeSelect.tsx
+  s_f0dc335a5cf5d7::t_eaf99cfe1cb059 12-16
+  s_f0dc335a5cf5d7::t_e0c53770e8d1ec 1-11,17-50
+.design-sync/previews/Toggle.tsx
+  s_f0dc335a5cf5d7::t_f37f8cf4c322d3 1-56
+.design-sync/previews/Badge.tsx
+  s_f0dc335a5cf5d7::t_dd5fb8e0a5dc2d 1-38
+.design-sync/docs/Empty.md
+  s_f0dc335a5cf5d7::t_0bb86d3c757794 1-3
+.design-sync/docs/Item.md
+  s_f0dc335a5cf5d7::t_0bb86d3c757794 1-3
+.design-sync/previews/Sheet.tsx
+  s_f0dc335a5cf5d7::t_eaf99cfe1cb059 16
+  s_f0dc335a5cf5d7::t_fff28b3ba82899 1-15,17-39
+.design-sync/docs/Field.md
+  s_f0dc335a5cf5d7::t_0bb86d3c757794 1-3
+.design-sync/docs/Checkbox.md
+  s_f0dc335a5cf5d7::t_0bb86d3c757794 1-3
+.design-sync/previews/DropdownMenu.tsx
+  s_f0dc335a5cf5d7::t_baadca0c0adac0 1-24,26-58
+  s_f0dc335a5cf5d7::t_eaf99cfe1cb059 25
+eslint.config.js
+  s_f0dc335a5cf5d7::t_9c31edc97dca83 108-110
+  s_f0dc335a5cf5d7::t_d9aab2404e2045 107
+.design-sync/docs/Skeleton.md
+  s_f0dc335a5cf5d7::t_0bb86d3c757794 1-3
+.design-sync/previews/ButtonGroup.tsx
+  s_f0dc335a5cf5d7::t_9b0a81a95dc661 1-55
+.design-sync/previews/Alert.tsx
+  s_f0dc335a5cf5d7::t_aa3711c25f0890 1-35
+.design-sync/docs/Tooltip.md
+  s_f0dc335a5cf5d7::t_0bb86d3c757794 1-3
+.design-sync/build-types.mjs
+  s_f0dc335a5cf5d7::t_21b073d50154f3 1-25,27-30,36-38,42-44,60-63,66-68
+  s_f0dc335a5cf5d7::t_eaf99cfe1cb059 26,31-35,39-41,45-59,64-65,69-75
+.design-sync/previews/Label.tsx
+  s_f0dc335a5cf5d7::t_fafe4656701c47 1-30
+.design-sync/previews/Tooltip.tsx
+  s_f0dc335a5cf5d7::t_d3a75ef007f5ea 1-48
+.design-sync/previews/Checkbox.tsx
+  s_f0dc335a5cf5d7::t_0eddd74d94e398 1-33
+.design-sync/docs/Popover.md
+  s_f0dc335a5cf5d7::t_0bb86d3c757794 1-3
+.design-sync/docs/Alert.md
+  s_f0dc335a5cf5d7::t_0bb86d3c757794 1-3
+.design-sync/docs/InputGroup.md
+  s_f0dc335a5cf5d7::t_0bb86d3c757794 1-3
+.design-sync/previews/Dialog.tsx
+  s_f0dc335a5cf5d7::t_1c32008cc084cc 1-16,22-42
+  s_f0dc335a5cf5d7::t_d70741891d6fb1 17-19,21
+  s_f0dc335a5cf5d7::t_eaf99cfe1cb059 20
+.prettierignore
+  s_f0dc335a5cf5d7::t_289863a609e246 22-24
+  s_f0dc335a5cf5d7::t_b51b2152bc795c 25-29
+.design-sync/docs/ScrollArea.md
+  s_f0dc335a5cf5d7::t_0bb86d3c757794 1-3
+.design-sync/docs/Textarea.md
+  s_f0dc335a5cf5d7::t_0bb86d3c757794 1-3
+.design-sync/docs/Label.md
+  s_f0dc335a5cf5d7::t_0bb86d3c757794 1-3
+.design-sync/docs/Select.md
+  s_f0dc335a5cf5d7::t_0bb86d3c757794 1-3
+.design-sync/docs/Kbd.md
+  s_f0dc335a5cf5d7::t_0bb86d3c757794 1-3
+.design-sync/previews/Select.tsx
+  s_f0dc335a5cf5d7::t_8d67d624184f10 1-86
+.design-sync/previews/ResizablePanelGroup.tsx
+  s_f0dc335a5cf5d7::t_2de83349f396b6 7-9,12-26,32-56
+  s_f0dc335a5cf5d7::t_63b3d52368b639 1-6,10-11,27-31,57-58
+.design-sync/previews/Popover.tsx
+  s_f0dc335a5cf5d7::t_d690156b8a71ad 1-19,21-38
+  s_f0dc335a5cf5d7::t_eaf99cfe1cb059 20
+.design-sync/previews/Kbd.tsx
+  s_f0dc335a5cf5d7::t_969e191d2e26ea 1-44
+.design-sync/docs/Calendar.md
+  s_f0dc335a5cf5d7::t_0bb86d3c757794 1-3
+.design-sync/NOTES.md
+  s_f0dc335a5cf5d7::t_eaf99cfe1cb059 75,154
+  s_f0dc335a5cf5d7::t_bc3137d9704fb5 1-15,17-19,27-31,35-40,64-66,70-71,73-74,78,91-95,100,102,114,142-143,145-146
+  s_f0dc335a5cf5d7::t_67e985fda0d1fa 16,20-26,32-34,41-63,67-69,72,76-77,79-90,96-99,101,103-113,147-153,155-165
+  s_f0dc335a5cf5d7::t_f05976cb6ef2ba 144
+  s_f0dc335a5cf5d7::t_d2c823d1c73007 115-141
+.design-sync/docs/RadioGroup.md
+  s_f0dc335a5cf5d7::t_0bb86d3c757794 1-3
+.design-sync/previews/Card.tsx
+  s_f0dc335a5cf5d7::t_ac9cb7b251cb26 1-42,46-60
+  s_f0dc335a5cf5d7::t_eaf99cfe1cb059 43-45
+.design-sync/ds-styles.css
+  s_f0dc335a5cf5d7::t_12f3aa8cb82bb0 17-56
+  s_f0dc335a5cf5d7::t_2cac57564cff35 1-16,57-81
+.design-sync/docs/Toggle.md
+  s_f0dc335a5cf5d7::t_0bb86d3c757794 1-3
+.design-sync/docs/Switch.md
+  s_f0dc335a5cf5d7::t_0bb86d3c757794 1-3
+.gitignore
+  s_f0dc335a5cf5d7::t_b827b720fc779f 35-36
+  s_f0dc335a5cf5d7::t_4f111e1e57e1c5 28-34
+.design-sync/docs/Spinner.md
+  s_f0dc335a5cf5d7::t_0bb86d3c757794 1-3
+.design-sync/previews/Button.tsx
+  s_f0dc335a5cf5d7::t_3b3abf5f8d24ab 1-64
+.design-sync/docs/Sidebar.md
+  s_f0dc335a5cf5d7::t_0bb86d3c757794 1-3
+.design-sync/previews/Skeleton.tsx
+  s_f0dc335a5cf5d7::t_f8dc407ebc31fd 1-33
+.design-sync/previews/Breadcrumb.tsx
+  s_f0dc335a5cf5d7::t_4a31d833049886 1-49
+.design-sync/overrides/story-imports.mjs
+  s_f0dc335a5cf5d7::t_b5a7b15d3069cb 3-216,226-270
+  s_f0dc335a5cf5d7::t_40c8ee50f371c5 1-2
+  s_f0dc335a5cf5d7::t_3b58d250fbb1d8 217-225
+.design-sync/docs/Command.md
+  s_f0dc335a5cf5d7::t_0bb86d3c757794 1-3
+.design-sync/docs/DatePicker.md
+  s_f0dc335a5cf5d7::t_0bb86d3c757794 1-3
+.design-sync/previews/TagInput.tsx
+  s_f0dc335a5cf5d7::t_b40ed2af14d345 1-4,7-8,12-40
+  s_f0dc335a5cf5d7::t_eaf99cfe1cb059 5-6,9-11
+.design-sync/previews/Toaster.tsx
+  s_f0dc335a5cf5d7::t_2e3527198500fb 1-16,18-20,27-29
+  s_f0dc335a5cf5d7::t_eaf99cfe1cb059 17,21-26
+.design-sync/docs/Toaster.md
+  s_f0dc335a5cf5d7::t_0bb86d3c757794 1-3
+.design-sync/previews/Separator.tsx
+  s_f0dc335a5cf5d7::t_2b9a09eb2862ee 1-25
+.design-sync/previews/RadioGroup.tsx
+  s_f0dc335a5cf5d7::t_d901ce86aca4a5 1-51
+.design-sync/previews/Field.tsx
+  s_f0dc335a5cf5d7::t_2dd16527a38267 1-23,27-79,83-87
+  s_f0dc335a5cf5d7::t_eaf99cfe1cb059 24-26,80-82
+.design-sync/previews/DatePicker.tsx
+  s_f0dc335a5cf5d7::t_eaf99cfe1cb059 16-18
+  s_f0dc335a5cf5d7::t_3cdd3d63e441d5 1-15,19-38
+.design-sync/docs/Badge.md
+  s_f0dc335a5cf5d7::t_0bb86d3c757794 1-3
+.design-sync/previews/Sidebar.tsx
+  s_f0dc335a5cf5d7::t_89364c3bb244b1 1-20,25-76
+  s_f0dc335a5cf5d7::t_eaf99cfe1cb059 21-24
+.design-sync/config.json
+  s_f0dc335a5cf5d7::t_175bef7847f9fb 16,23
+  s_f0dc335a5cf5d7::t_332d325325ef87 10
+  s_f0dc335a5cf5d7::t_a259198796388e 12-14
+  s_f0dc335a5cf5d7::t_eaf99cfe1cb059 25-29
+  s_f0dc335a5cf5d7::t_ba807814d7b6bd 30-33
+  s_f0dc335a5cf5d7::t_6905c582cb9932 6-7
+  s_f0dc335a5cf5d7::t_0bb86d3c757794 8-9,11,40-179
+  s_f0dc335a5cf5d7::t_6efecfd900ba60 1-5,180
+  s_f0dc335a5cf5d7::t_9ec1fb39b8536a 17-22,24,34-38
+  s_f0dc335a5cf5d7::t_213e076d68d8f9 15,39
+.design-sync/docs/Card.md
+  s_f0dc335a5cf5d7::t_0bb86d3c757794 1-3
+.design-sync/docs/Breadcrumb.md
+  s_f0dc335a5cf5d7::t_0bb86d3c757794 1-3
+.design-sync/previews/ScrollArea.tsx
+  s_f0dc335a5cf5d7::t_7e612c8ab3d529 1-4,18-24,26-39,48-59
+  s_f0dc335a5cf5d7::t_eaf99cfe1cb059 5-17,25,40-47
+.design-sync/previews/Input.tsx
+  s_f0dc335a5cf5d7::t_906da89c54e806 1-40
+.design-sync/docs/ButtonGroup.md
+  s_f0dc335a5cf5d7::t_0bb86d3c757794 1-3
+.design-sync/docs/ToggleGroup.md
+  s_f0dc335a5cf5d7::t_0bb86d3c757794 1-3
+.design-sync/previews/InputGroup.tsx
+  s_f0dc335a5cf5d7::t_132c249629c657 1-56
+.design-sync/docs/Sheet.md
+  s_f0dc335a5cf5d7::t_0bb86d3c757794 1-3
+.design-sync/docs/NativeSelect.md
+  s_f0dc335a5cf5d7::t_0bb86d3c757794 1-3
+.design-sync/docs/Dialog.md
+  s_f0dc335a5cf5d7::t_0bb86d3c757794 1-3
+.design-sync/docs/Separator.md
+  s_f0dc335a5cf5d7::t_0bb86d3c757794 1-3
+.design-sync/previews/Item.tsx
+  s_f0dc335a5cf5d7::t_bff67619b89b98 1-46,50-82
+  s_f0dc335a5cf5d7::t_eaf99cfe1cb059 47-49
+.design-sync/docs/ResizablePanelGroup.md
+  s_f0dc335a5cf5d7::t_0bb86d3c757794 1-3
+.design-sync/previews/Spinner.tsx
+  s_f0dc335a5cf5d7::t_925cc2fda92f02 1-36
+.design-sync/docs/TagInput.md
+  s_f0dc335a5cf5d7::t_0bb86d3c757794 1-3
+.design-sync/previews/Switch.tsx
+  s_f0dc335a5cf5d7::t_be8e92ee4857b3 1-32
+.design-sync/conventions.md
+  s_f0dc335a5cf5d7::t_d8a5a42a492990 1-9,11-23,33-76,80-98
+  s_f0dc335a5cf5d7::t_eaf99cfe1cb059 10,24-32,77-79
+.design-sync/docs/Input.md
+  s_f0dc335a5cf5d7::t_0bb86d3c757794 1-3
+.design-sync/previews/ToggleGroup.tsx
+  s_f0dc335a5cf5d7::t_eaf99cfe1cb059 22-26
+  s_f0dc335a5cf5d7::t_8dc099e2d73663 1-21,27-42
+.design-sync/previews/Empty.tsx
+  s_f0dc335a5cf5d7::t_5362d92973e263 1-45
+.design-sync/previews/Textarea.tsx
+  s_f0dc335a5cf5d7::t_8988689d3244e2 1-37
+.design-sync/docs/Button.md
+  s_f0dc335a5cf5d7::t_0bb86d3c757794 1-3
+.design-sync/previews/AlertDialog.tsx
+  s_f0dc335a5cf5d7::t_eaf99cfe1cb059 15
+  s_f0dc335a5cf5d7::t_dc04dd8b3a0814 1-14,16-30
+.design-sync/previews/Calendar.tsx
+  s_f0dc335a5cf5d7::t_a61b456d34e8a0 2
+  s_f0dc335a5cf5d7::t_0b3d5dbf2a674a 14,33,50
+  s_f0dc335a5cf5d7::t_d994335363b5f5 1,3-7,11-13,15-23,27-32,34-42,46-49,51-57
+  s_f0dc335a5cf5d7::t_eaf99cfe1cb059 8-10,24-26,43-45
+.design-sync/previews/Command.tsx
+  s_f0dc335a5cf5d7::t_eede218ac34b24 1-61
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.18",
+  "base_commit_sha": "0a6402b9e31f62b3cfb6cdb1e80730af2f7f0565",
+  "prompts": {},
+  "sessions": {
+    "s_f0dc335a5cf5d7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "551c825c-b7b2-4429-aeeb-999b4ebf3ce9",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Pavlo Sheiman <pavel.sheiman@gmail.com>"
+    }
+  }
+}
