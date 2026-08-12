@@ -92,7 +92,7 @@ The repository is configured for human and AI-assisted development:
 ### Quick Start
 
 ```bash
-# Prerequisites: Node.js 20+, Rust (latest stable)
+# Prerequisites: Node.js 20.19+ LTS, Rust (latest stable)
 # See https://tauri.app/start/prerequisites/ for platform-specific deps
 
 git clone https://github.com/upware-ops/tauri-ade.git

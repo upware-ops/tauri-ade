@@ -4,6 +4,21 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@theme {
+  --animate-splash-breathe: splash-breathe 4s ease-in-out infinite alternate;
+}
+
+@keyframes splash-breathe {
+  from {
+    opacity: 0.35;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 0.65;
+    transform: scale(1.06);
+  }
+}
+
 @layer base {
   :root {
     --app-corner-radius: 12px;

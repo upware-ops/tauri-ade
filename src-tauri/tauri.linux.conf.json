@@ -16,7 +16,8 @@
         "alwaysOnTop": false,
         "transparent": false,
         "shadow": true,
-        "dragDropEnabled": true
+        "dragDropEnabled": true,
+        "visible": false
       }
     ]
   }

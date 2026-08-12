@@ -12,7 +12,6 @@ run_mode = "concurrent"
 [scripts.run.app]
 available_in = [ "local" ]
 command = '''
-source ~/.cargo/env
 npm run tauri -- dev --config "{\"identifier\":\"com.upware-ops.tauri-ade.$CONDUCTOR_WORKSPACE_ID\",\"build\":{\"beforeDevCommand\":\"npm run dev -- --port $CONDUCTOR_PORT\",\"devUrl\":\"http://localhost:$CONDUCTOR_PORT\"}}"
 '''
 default = true
