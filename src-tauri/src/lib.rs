@@ -45,7 +45,12 @@ pub fn run() {
     {
         app_builder = app_builder.plugin(
             tauri_plugin_window_state::Builder::new()
-                .with_state_flags(tauri_plugin_window_state::StateFlags::all())
+                // VISIBLE is excluded: restoring it would show the main window
+                // before the frontend has painted the splash.
+                .with_state_flags(
+                    tauri_plugin_window_state::StateFlags::all()
+                        - tauri_plugin_window_state::StateFlags::VISIBLE,
+                )
                 .with_denylist(&["quick-pane"])
                 .build(),
         );

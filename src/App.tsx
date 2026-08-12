@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { check } from '@tauri-apps/plugin-updater'
 import { relaunch } from '@tauri-apps/plugin-process'
 import { initializeCommandSystem } from './lib/commands'
@@ -11,10 +11,18 @@ import './App.css'
 import { MainWindow } from './components/layout/MainWindow'
 import { ThemeProvider } from './components/ThemeProvider'
 import { ErrorBoundary } from './components/ErrorBoundary'
+import { SplashScreen } from './components/splash'
 import { useSquareCornersEffect } from './hooks/useSquareCornersEffect'
+
+const SPLASH_MIN_MS = 2000
+const SPLASH_MAX_MS = 8000
+
+const wait = (ms: number) =>
+  new Promise<void>(resolve => setTimeout(resolve, ms))
 
 function App() {
   useSquareCornersEffect()
+  const [bootReady, setBootReady] = useState(false)
 
   // Initialize command system and cleanup on app startup
   useEffect(() => {
@@ -42,7 +50,12 @@ function App() {
       }
     }
 
-    initLanguageAndMenu()
+    // The race caps a hung IPC: a stuck boot must not leave the splash up
+    // forever on top of an app that is otherwise working.
+    void Promise.all([
+      Promise.race([initLanguageAndMenu(), wait(SPLASH_MAX_MS)]),
+      wait(SPLASH_MIN_MS),
+    ]).then(() => setBootReady(true))
 
     // Clean up old recovery files on startup
     cleanupOldFiles().catch(error => {
@@ -115,6 +128,7 @@ function App() {
     <ErrorBoundary>
       <ThemeProvider>
         <MainWindow />
+        <SplashScreen done={bootReady} />
       </ThemeProvider>
     </ErrorBoundary>
   )

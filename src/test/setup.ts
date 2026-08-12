@@ -23,6 +23,16 @@ vi.mock('@tauri-apps/api/event', () => ({
   }),
 }))
 
+vi.mock('@tauri-apps/api/app', () => ({
+  getVersion: vi.fn().mockResolvedValue('0.1.0'),
+}))
+
+vi.mock('@tauri-apps/api/window', () => ({
+  getCurrentWindow: vi.fn(() => ({
+    show: vi.fn().mockResolvedValue(undefined),
+  })),
+}))
+
 vi.mock('@tauri-apps/plugin-updater', () => ({
   check: vi.fn().mockResolvedValue(null),
 }))

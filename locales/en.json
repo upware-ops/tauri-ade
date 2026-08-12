@@ -1,6 +1,13 @@
 {
   "app.name": "Tauri ADE",
 
+  "splash.loading": "Starting {{appName}}...",
+  "splash.version": "Version {{version}}",
+  "splash.status.preferences": "Loading preferences...",
+  "splash.status.language": "Applying language settings...",
+  "splash.status.commands": "Registering commands...",
+  "splash.status.ready": "Almost ready...",
+
   "menu.about": "About {{appName}}",
   "menu.checkForUpdates": "Check for Updates...",
   "menu.preferences": "Preferences...",

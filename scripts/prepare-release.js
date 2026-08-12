@@ -1,181 +1,241 @@
 #!/usr/bin/env node
 
-import fs from 'fs'
-import { execSync } from 'child_process'
-import readline from 'readline'
+import fs from 'node:fs'
+import { execFileSync, spawnSync } from 'node:child_process'
 
-function exec(command, options = {}) {
-  try {
-    return execSync(command, {
-      encoding: 'utf8',
-      stdio: options.silent ? 'pipe' : 'inherit',
-      ...options,
-    })
-  } catch (error) {
-    throw new Error(`Command failed: ${command}\n${error.message}`)
-  }
-}
+const VERSION_FILES = [
+  'package.json',
+  'package-lock.json',
+  'src-tauri/Cargo.toml',
+  'src-tauri/Cargo.lock',
+  'src-tauri/tauri.conf.json',
+]
+const BUMPS = new Set(['patch', 'minor', 'major'])
+const SEMVER = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/
+const CARGO_VERSION = /^version = "([^"]+)"$/m
+const CARGO_LOCK_VERSION =
+  /(\[\[package\]\]\nname = "tauri-ade"\nversion = ")([^"]+)(")/
 
-function askQuestion(question) {
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-  })
-
-  return new Promise(resolve => {
-    rl.question(question, answer => {
-      rl.close()
-      resolve(answer.trim())
-    })
+function run(command, args, options = {}) {
+  return execFileSync(command, args, {
+    encoding: 'utf8',
+    stdio: options.silent ? 'pipe' : 'inherit',
   })
 }
 
-async function prepareRelease() {
-  const version = process.argv[2]
+function readJson(file) {
+  return JSON.parse(fs.readFileSync(file, 'utf8'))
+}
 
-  if (!version || !version.match(/^v?\d+\.\d+\.\d+$/)) {
-    console.error('❌ Usage: node scripts/prepare-release.js v1.0.0')
-    console.error('   or: npm run prepare-release v1.0.0')
-    process.exit(1)
-  }
+function readMetadata() {
+  const packageJson = readJson('package.json')
+  const packageLock = readJson('package-lock.json')
+  const cargoToml = fs.readFileSync('src-tauri/Cargo.toml', 'utf8')
+  const cargoLock = fs.readFileSync('src-tauri/Cargo.lock', 'utf8')
+  const tauriConfig = readJson('src-tauri/tauri.conf.json')
+  const cargoVersion = cargoToml.match(CARGO_VERSION)?.[1]
+  const cargoLockVersion = cargoLock.match(CARGO_LOCK_VERSION)?.[2]
 
-  const cleanVersion = version.replace('v', '')
-  const tagVersion = version.startsWith('v') ? version : `v${version}`
-
-  console.log(`🚀 Preparing release ${tagVersion}...\n`)
-
-  try {
-    // Check git status
-    console.log('🔍 Checking git status...')
-    const gitStatus = exec('git status --porcelain', { silent: true })
-    if (gitStatus.trim()) {
-      console.error(
-        '❌ Working directory is not clean. Please commit or stash changes first.'
-      )
-      console.log('Uncommitted changes:')
-      console.log(gitStatus)
-      process.exit(1)
-    }
-    console.log('✅ Working directory is clean')
-
-    // Run all checks first
-    console.log('\n🔍 Running pre-release checks...')
-    exec('npm run check:all')
-    console.log('✅ All checks passed')
-
-    // Update package.json
-    console.log('\n📝 Updating package.json...')
-    const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'))
-    const oldPkgVersion = pkg.version
-    pkg.version = cleanVersion
-    fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n')
-    console.log(`   ${oldPkgVersion} → ${cleanVersion}`)
-
-    // Update Cargo.toml
-    console.log('📝 Updating Cargo.toml...')
-    const cargoPath = 'src-tauri/Cargo.toml'
-    const cargoToml = fs.readFileSync(cargoPath, 'utf8')
-    const oldCargoVersion = cargoToml.match(/version = "([^"]*)"/)
-    const updatedCargo = cargoToml.replace(
-      /version = "[^"]*"/,
-      `version = "${cleanVersion}"`
-    )
-    fs.writeFileSync(cargoPath, updatedCargo)
-    console.log(
-      `   ${oldCargoVersion ? oldCargoVersion[1] : 'unknown'} → ${cleanVersion}`
-    )
-
-    // Update tauri.conf.json
-    console.log('📝 Updating tauri.conf.json...')
-    const tauriConfigPath = 'src-tauri/tauri.conf.json'
-    const tauriConfig = JSON.parse(fs.readFileSync(tauriConfigPath, 'utf8'))
-    const oldTauriVersion = tauriConfig.version
-    tauriConfig.version = cleanVersion
-    fs.writeFileSync(
-      tauriConfigPath,
-      JSON.stringify(tauriConfig, null, 2) + '\n'
-    )
-    console.log(`   ${oldTauriVersion} → ${cleanVersion}`)
-
-    // Run npm install to update lock files
-    console.log('\n📦 Updating lock files...')
-    exec('npm install', { silent: true })
-    console.log('✅ Lock files updated')
-
-    // Verify configurations
-    console.log('\n🔍 Verifying configurations...')
-
-    if (!tauriConfig.bundle?.createUpdaterArtifacts) {
-      console.warn(
-        '⚠️  Warning: createUpdaterArtifacts not enabled in tauri.conf.json'
-      )
-    } else {
-      console.log('✅ Updater artifacts enabled')
-    }
-
-    if (!tauriConfig.plugins?.updater?.pubkey) {
-      console.warn('⚠️  Warning: Updater public key not configured')
-    } else {
-      console.log('✅ Updater public key configured')
-    }
-
-    // Final check that Rust code compiles
-    console.log('\n🔍 Running final compilation check...')
-    exec('source ~/.cargo/env && cd src-tauri && cargo check')
-    console.log('✅ Rust compilation check passed')
-
-    console.log(`\n🎉 Successfully prepared release ${tagVersion}!`)
-    console.log('\n📋 Git commands to execute:')
-    console.log(`   git add .`)
-    console.log(`   git commit -m "chore: release ${tagVersion}"`)
-    console.log(`   git tag ${tagVersion}`)
-    console.log(`   git push origin main --tags`)
-
-    console.log('\n🚀 After pushing:')
-    console.log('   • GitHub Actions will automatically build the release')
-    console.log('   • A draft release will be created on GitHub')
-    console.log("   • You'll need to manually publish the draft release")
-    console.log('   • Users will receive auto-update notifications')
-
-    // Interactive execution option
-    const answer = await askQuestion(
-      '\n❓ Would you like me to execute these git commands? (y/N): '
-    )
-
-    if (answer.toLowerCase() === 'y' || answer.toLowerCase() === 'yes') {
-      console.log('\n⚡ Executing git commands...')
-
-      console.log('📝 Adding changes...')
-      exec('git add .')
-
-      console.log('💾 Creating commit...')
-      exec(`git commit -m "chore: release ${tagVersion}"`)
-
-      console.log('🏷️  Creating tag...')
-      exec(`git tag ${tagVersion}`)
-
-      console.log('📤 Pushing to remote...')
-      exec('git push origin main --tags')
-
-      console.log(`\n🎊 Release ${tagVersion} has been published!`)
-      console.log(
-        '📱 Check GitHub Actions: https://github.com/upware-ops/tauri-ade/actions'
-      )
-      console.log(
-        '📦 Draft release will appear at: https://github.com/upware-ops/tauri-ade/releases'
-      )
-      console.log(
-        '\n⚠️  Remember: You need to manually publish the draft release on GitHub!'
-      )
-    } else {
-      console.log('\n📝 Git commands saved for manual execution.')
-      console.log("   Run them when you're ready to release.")
-    }
-  } catch (error) {
-    console.error('\n❌ Pre-release preparation failed:', error.message)
-    process.exit(1)
+  return {
+    files: { packageJson, packageLock, cargoToml, cargoLock, tauriConfig },
+    versions: {
+      'package.json': packageJson.version,
+      'package-lock.json': packageLock.version,
+      'package-lock.json root package': packageLock.packages?.['']?.version,
+      'src-tauri/Cargo.toml': cargoVersion,
+      'src-tauri/Cargo.lock': cargoLockVersion,
+      'src-tauri/tauri.conf.json': tauriConfig.version,
+    },
   }
 }
 
-// Run if this is the main module
-prepareRelease()
+function validateVersions(versions, expected) {
+  for (const [location, version] of Object.entries(versions)) {
+    if (typeof version !== 'string' || !SEMVER.test(version)) {
+      throw new Error(`${location} has invalid stable version: ${version}`)
+    }
+    if (version !== expected) {
+      throw new Error(
+        `Version mismatch: ${location} is ${version}, expected ${expected}`
+      )
+    }
+  }
+}
+
+function validateUpdater(tauriConfig) {
+  const updater = tauriConfig.plugins?.updater
+  const endpoints = updater?.endpoints
+
+  if (tauriConfig.bundle?.createUpdaterArtifacts !== true) {
+    throw new Error('bundle.createUpdaterArtifacts must be true')
+  }
+  if (
+    !Array.isArray(endpoints) ||
+    endpoints.length === 0 ||
+    endpoints.some(endpoint => typeof endpoint !== 'string' || !endpoint.trim())
+  ) {
+    throw new Error('At least one updater endpoint must be configured')
+  }
+  if (typeof updater?.pubkey !== 'string' || !updater.pubkey.trim()) {
+    throw new Error('The updater public key must be configured')
+  }
+}
+
+function nextVersion(version, bump) {
+  let [major, minor, patch] = version.split('.').map(BigInt)
+
+  if (bump === 'major') {
+    major += 1n
+    minor = 0n
+    patch = 0n
+  } else if (bump === 'minor') {
+    minor += 1n
+    patch = 0n
+  } else {
+    patch += 1n
+  }
+
+  return `${major}.${minor}.${patch}`
+}
+
+function validateGit(tag) {
+  if (run('git', ['status', '--porcelain'], { silent: true }).trim()) {
+    throw new Error('Working tree must be clean')
+  }
+  if (
+    run('git', ['branch', '--show-current'], { silent: true }).trim() !== 'main'
+  ) {
+    throw new Error('Release preparation must run on the main branch')
+  }
+
+  const head = run('git', ['rev-parse', 'HEAD'], { silent: true }).trim()
+  const remote = spawnSync(
+    'git',
+    [
+      'ls-remote',
+      '--exit-code',
+      'origin',
+      'refs/heads/main',
+      `refs/tags/${tag}`,
+    ],
+    { encoding: 'utf8' }
+  )
+
+  if (remote.status !== 0) {
+    throw new Error(remote.stderr.trim() || 'Could not read origin')
+  }
+
+  const refs = new Map(
+    remote.stdout
+      .trim()
+      .split('\n')
+      .filter(Boolean)
+      .map(line => line.split(/\s+/).reverse())
+  )
+
+  if (refs.get('refs/heads/main') !== head) {
+    throw new Error('HEAD must equal origin/main')
+  }
+  if (refs.has(`refs/tags/${tag}`)) {
+    throw new Error(`Tag ${tag} already exists on origin`)
+  }
+
+  const localTag = spawnSync(
+    'git',
+    ['show-ref', '--verify', '--quiet', `refs/tags/${tag}`],
+    { encoding: 'utf8' }
+  )
+  if (localTag.status === 0) {
+    throw new Error(`Tag ${tag} already exists locally`)
+  }
+  if (localTag.status !== 1) {
+    throw new Error(localTag.stderr.trim() || `Could not inspect tag ${tag}`)
+  }
+}
+
+function writeMetadata(metadata, version) {
+  const { packageJson, packageLock, cargoToml, cargoLock, tauriConfig } =
+    metadata.files
+
+  packageJson.version = version
+  packageLock.version = version
+  packageLock.packages[''].version = version
+  tauriConfig.version = version
+
+  fs.writeFileSync('package.json', `${JSON.stringify(packageJson, null, 2)}\n`)
+  fs.writeFileSync(
+    'package-lock.json',
+    `${JSON.stringify(packageLock, null, 2)}\n`
+  )
+  fs.writeFileSync(
+    'src-tauri/Cargo.toml',
+    cargoToml.replace(CARGO_VERSION, `version = "${version}"`)
+  )
+  fs.writeFileSync(
+    'src-tauri/Cargo.lock',
+    cargoLock.replace(
+      CARGO_LOCK_VERSION,
+      (_, prefix, _currentVersion, suffix) => `${prefix}${version}${suffix}`
+    )
+  )
+  fs.writeFileSync(
+    'src-tauri/tauri.conf.json',
+    `${JSON.stringify(tauriConfig, null, 2)}\n`
+  )
+}
+
+function validateChangedFiles() {
+  const changed = run(
+    'git',
+    ['status', '--porcelain', '--untracked-files=all'],
+    { silent: true }
+  )
+    .split('\n')
+    .filter(Boolean)
+
+  const actual = changed.map(line => line.slice(3)).sort()
+  const expected = [...VERSION_FILES].sort()
+
+  if (
+    actual.length !== expected.length ||
+    actual.some((file, index) => file !== expected[index])
+  ) {
+    throw new Error(
+      `Expected only release metadata changes; found: ${actual.join(', ') || 'none'}`
+    )
+  }
+}
+
+function prepareRelease() {
+  const args = process.argv.slice(2)
+  if (args.length !== 1 || !BUMPS.has(args[0])) {
+    throw new Error('Usage: npm run release:prepare -- <patch|minor|major>')
+  }
+
+  const bump = args[0]
+  const metadata = readMetadata()
+  const currentVersion = metadata.files.packageJson.version
+  validateVersions(metadata.versions, currentVersion)
+  validateUpdater(metadata.files.tauriConfig)
+
+  const version = nextVersion(currentVersion, bump)
+  const tag = `v${version}`
+  validateGit(tag)
+
+  writeMetadata(metadata, version)
+  run('npm', ['run', 'check:all'])
+
+  const updated = readMetadata()
+  validateVersions(updated.versions, version)
+  validateUpdater(updated.files.tauriConfig)
+  validateChangedFiles()
+
+  console.log(`Prepared ${tag}`)
+}
+
+try {
+  prepareRelease()
+} catch (error) {
+  console.error(`Release preparation failed: ${error.message}`)
+  process.exit(1)
+}

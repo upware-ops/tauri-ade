@@ -1,6 +1,13 @@
 {
   "app.name": "Tauri ADE",
 
+  "splash.loading": "جارٍ تشغيل {{appName}}...",
+  "splash.version": "الإصدار {{version}}",
+  "splash.status.preferences": "جارٍ تحميل التفضيلات...",
+  "splash.status.language": "جارٍ تطبيق إعدادات اللغة...",
+  "splash.status.commands": "جارٍ تسجيل الأوامر...",
+  "splash.status.ready": "على وشك الانتهاء...",
+
   "menu.about": "حول {{appName}}",
   "menu.checkForUpdates": "التحقق من التحديثات...",
   "menu.preferences": "التفضيلات...",

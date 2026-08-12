@@ -1,21 +1,147 @@
-name: 'Release Tauri ADE'
+name: 'Release'
 
 on:
   push:
     tags: ['v*']
   workflow_dispatch:
     inputs:
-      version:
-        description: 'Release version (e.g., v1.0.0)'
+      tag:
+        description: 'Existing release tag (for example, v1.2.3)'
         required: true
         type: string
+
+concurrency:
+  group: 'release-${{ inputs.tag || github.ref_name }}'
+  cancel-in-progress: false
+
+permissions:
+  contents: read
 
 env:
   CARGO_TERM_COLOR: always
   RUST_BACKTRACE: 1
 
 jobs:
-  publish-tauri:
+  validate:
+    name: 'Validate tag'
+    runs-on: 'ubuntu-22.04'
+    outputs:
+      published: ${{ steps.release.outputs.published }}
+      tag: ${{ steps.tag.outputs.tag }}
+    steps:
+      - name: Resolve tag
+        id: tag
+        env:
+          INPUT_TAG: ${{ inputs.tag }}
+          REF_TAG: ${{ github.ref_name }}
+        run: |
+          TAG="${INPUT_TAG:-$REF_TAG}"
+          [[ "$TAG" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]] || {
+            echo "Tag must match stable SemVer vX.Y.Z" >&2
+            exit 1
+          }
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.tag.outputs.tag }}
+          fetch-depth: 0
+
+      - name: Validate tag and metadata
+        env:
+          TAG: ${{ steps.tag.outputs.tag }}
+        run: |
+          test "$(git cat-file -t "refs/tags/$TAG")" = 'tag'
+          git fetch --no-tags origin main:refs/remotes/origin/main
+          git merge-base --is-ancestor "$(git rev-list --max-count=1 "$TAG")" origin/main
+          node <<'NODE'
+          const fs = require('node:fs')
+          const expected = process.env.TAG.slice(1)
+          const packageJson = require('./package.json')
+          const packageLock = require('./package-lock.json')
+          const cargoToml = fs.readFileSync('src-tauri/Cargo.toml', 'utf8')
+          const cargoLock = fs.readFileSync('src-tauri/Cargo.lock', 'utf8')
+          const tauri = require('./src-tauri/tauri.conf.json')
+          const versions = [
+            packageJson.version,
+            packageLock.version,
+            packageLock.packages?.['']?.version,
+            cargoToml.match(/^version = "([^"]+)"$/m)?.[1],
+            cargoLock.match(/\[\[package\]\]\nname = "tauri-ade"\nversion = "([^"]+)"/)?.[1],
+            tauri.version,
+          ]
+          if (versions.some(version => version !== expected)) {
+            throw new Error(`Version metadata does not match ${expected}: ${versions.join(', ')}`)
+          }
+          if (tauri.bundle?.createUpdaterArtifacts !== true) {
+            throw new Error('Updater artifacts are disabled')
+          }
+          if (!tauri.plugins?.updater?.pubkey?.trim()) {
+            throw new Error('Updater public key is missing')
+          }
+          const endpoints = tauri.plugins?.updater?.endpoints
+          if (!Array.isArray(endpoints) || !endpoints.length || endpoints.some(value => !value?.trim())) {
+            throw new Error('Updater endpoint is missing')
+          }
+          NODE
+
+      - name: Check existing release
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.tag.outputs.tag }}
+        run: |
+          if release=$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG" 2>release-error); then
+            test "$(jq --raw-output '.prerelease' <<< "$release")" = 'false'
+            if test "$(jq --raw-output '.draft' <<< "$release")" = 'false'; then
+              echo 'published=true' >> "$GITHUB_OUTPUT"
+            else
+              echo 'published=false' >> "$GITHUB_OUTPUT"
+            fi
+          elif grep --quiet 'HTTP 404' release-error; then
+            echo 'published=false' >> "$GITHUB_OUTPUT"
+          else
+            cat release-error >&2
+            exit 1
+          fi
+
+      - name: Validate signing secrets
+        if: steps.release.outputs.published != 'true'
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: |
+          test -n "$TAURI_SIGNING_PRIVATE_KEY" || { echo 'TAURI_SIGNING_PRIVATE_KEY is missing' >&2; exit 1; }
+          test -n "$TAURI_SIGNING_PRIVATE_KEY_PASSWORD" || { echo 'TAURI_SIGNING_PRIVATE_KEY_PASSWORD is missing' >&2; exit 1; }
+
+  draft:
+    name: 'Create draft release'
+    needs: validate
+    if: needs.validate.outputs.published != 'true'
+    permissions:
+      contents: write
+    runs-on: 'ubuntu-22.04'
+    outputs:
+      release_id: ${{ steps.release.outputs.release_id }}
+    steps:
+      - name: Create or reuse draft
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.validate.outputs.tag }}
+        run: |
+          if ! gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --draft --generate-notes --title "Tauri ADE $TAG" --verify-tag
+          fi
+          release=$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG")
+          test "$(jq --raw-output '.draft' <<< "$release")" = 'true'
+          test "$(jq --raw-output '.prerelease' <<< "$release")" = 'false'
+          echo "release_id=$(jq --raw-output '.id' <<< "$release")" >> "$GITHUB_OUTPUT"
+
+  build:
+    name: 'Build ${{ matrix.platform }}'
+    needs: [validate, draft]
+    if: needs.validate.outputs.published != 'true'
     permissions:
       contents: write
     strategy:
@@ -28,10 +154,11 @@ jobs:
             args: '--bundles msi'
           - platform: 'ubuntu-22.04'
             args: '--bundles appimage'
-
     runs-on: ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.validate.outputs.tag }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -56,28 +183,78 @@ jobs:
       - name: Install frontend dependencies
         run: npm ci
 
-      - name: Build and release
-        uses: tauri-apps/tauri-action@dev
+      - name: Build and upload
+        uses: tauri-apps/tauri-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
-          tagName: ${{ github.ref_name || inputs.version }}
-          releaseName: 'Tauri ADE ${{ github.ref_name || inputs.version }}'
-          releaseBody: |
-            ## Tauri ADE ${{ github.ref_name || inputs.version }}
-
-            ### Installation Instructions
-            - **macOS**: Download the `.dmg` file and drag to Applications folder
-            - **Windows**: Download the `.msi` file and run the installer
-            - **Linux**: Download the `.AppImage` file, make it executable (`chmod +x`), and run
-
-            ### Auto-Updates
-            Existing users will receive automatic update notifications.
-
-            **Full Changelog**: https://github.com/${{ github.repository }}/commits/${{ github.ref_name || inputs.version }}
+          releaseId: ${{ needs.draft.outputs.release_id }}
+          tagName: ${{ needs.validate.outputs.tag }}
           releaseDraft: true
           prerelease: false
-          includeUpdaterJson: true
+          uploadUpdaterJson: true
+          uploadUpdaterSignatures: true
           args: ${{ matrix.args }}
+
+  publish:
+    name: 'Verify and publish'
+    needs: [validate, draft, build]
+    if: needs.validate.outputs.published != 'true'
+    permissions:
+      contents: write
+    runs-on: 'ubuntu-22.04'
+    steps:
+      - name: Verify release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.validate.outputs.tag }}
+        run: |
+          release=$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG")
+          test "$(jq --raw-output '.draft' <<< "$release")" = 'true'
+          assets=$(jq --raw-output '.assets[].name' <<< "$release")
+          require_asset() {
+            grep --quiet --extended-regexp "$1" <<< "$assets" || {
+              echo "Missing release asset matching $1" >&2
+              exit 1
+            }
+          }
+          require_asset '\.dmg$'
+          require_asset '\.app\.tar\.gz$'
+          require_asset '\.app\.tar\.gz\.sig$'
+          require_asset '\.msi$'
+          require_asset '\.msi\.zip$'
+          require_asset '\.msi\.zip\.sig$'
+          require_asset '\.AppImage$'
+          require_asset '\.AppImage\.tar\.gz$'
+          require_asset '\.AppImage\.tar\.gz\.sig$'
+          require_asset '^latest\.json$'
+          mkdir -p "$RUNNER_TEMP/release"
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --pattern latest.json --dir "$RUNNER_TEMP/release" --clobber
+          MANIFEST="$RUNNER_TEMP/release/latest.json" node <<'NODE'
+          const fs = require('node:fs')
+          const manifest = JSON.parse(fs.readFileSync(process.env.MANIFEST, 'utf8'))
+          const expected = process.env.TAG.slice(1)
+          if (manifest.version !== expected) {
+            throw new Error(`latest.json version ${manifest.version} does not match ${expected}`)
+          }
+          const entries = Object.entries(manifest.platforms ?? {})
+          for (const os of ['darwin', 'windows', 'linux']) {
+            const signed = entries.some(
+              ([platform, value]) =>
+                platform.startsWith(`${os}-`) &&
+                typeof value.signature === 'string' &&
+                value.signature.trim() &&
+                typeof value.url === 'string' &&
+                value.url.startsWith('https://')
+            )
+            if (!signed) throw new Error(`latest.json has no signed ${os} entry`)
+          }
+          NODE
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.validate.outputs.tag }}
+        run: gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --draft=false --latest --verify-tag

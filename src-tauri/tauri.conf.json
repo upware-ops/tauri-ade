@@ -27,7 +27,8 @@
         "alwaysOnTop": false,
         "transparent": false,
         "shadow": true,
-        "dragDropEnabled": true
+        "dragDropEnabled": true,
+        "visible": false
       }
     ],
     "security": {
@@ -65,7 +66,7 @@
       "endpoints": [
         "https://github.com/upware-ops/tauri-ade/releases/latest/download/latest.json"
       ],
-      "pubkey": ""
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDkzNDA5NzUyODVDMjYwQgpSV1FMSmx3b2RRazBDU1V6ODNTb0IxbVR2TFB4a1JQNFBrdWV4Z2I1eHJWZS9ydTNmTS9ySlJ4Wgo="
     }
   }
 }

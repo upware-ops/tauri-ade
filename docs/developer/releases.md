@@ -25,8 +25,8 @@ tauri signer generate -w ~/.tauri/tauri-ade.key
 
 Add these secrets (Settings → Secrets and variables → Actions):
 
-- `TAURI_PRIVATE_KEY`: Content of `~/.tauri/tauri-ade.key`
-- `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`: Password you set (if any)
+- `TAURI_SIGNING_PRIVATE_KEY`: Content of `~/.tauri/tauri-ade.key`
+- `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`: Password used to generate the key
 
 ### 3. Update Configuration
 
@@ -52,38 +52,27 @@ Add these secrets (Settings → Secrets and variables → Actions):
 
 ## Release Process
 
-### Simple Method
+Stable releases are prepared from the GitHub Actions UI:
 
-```bash
-npm run release:prepare v1.0.0
-```
+1. Open **Actions** → **Prepare release** → **Run workflow**.
+2. Select the `main` branch.
+3. Select `patch`, `minor`, or `major`. The default is `patch`.
+4. Run the workflow.
 
-This will:
+The workflow validates `main`, increments every version file, runs
+`npm run check:all`, commits `chore(release): vX.Y.Z`, creates an annotated
+tag, and atomically pushes the commit and tag. It then explicitly dispatches
+the `Release` workflow. Feature work continues to use pull requests into
+`main`; there is no release branch or release pull request.
 
-1. Check git status is clean
-2. Run all quality checks (`npm run check:all`)
-3. Update versions in `package.json`, `Cargo.toml`, `tauri.conf.json`
-4. Ask if you want to commit and push
+`Release` creates or reuses one draft with generated release notes and builds
+the supported platform matrix. After every build succeeds, it verifies the
+installers, updater archives and signatures, and `latest.json`. Only then does
+it publish the release and mark it latest.
 
-Then GitHub Actions will:
-
-1. Build the app for all platforms
-2. Create a draft release
-3. Generate `latest.json` for auto-updates
-4. Upload all installers and signatures
-
-Finally, manually publish the draft release on GitHub.
-
-### Manual Method
-
-```bash
-# Update versions in package.json, Cargo.toml, tauri.conf.json
-npm run check:all
-git add .
-git commit -m "chore: release v1.0.0"
-git tag v1.0.0
-git push origin main --tags
-```
+For local diagnosis, `npm run release:prepare -- <patch|minor|major>` performs
+the metadata update but deliberately does not commit, tag, or push. It requires
+a clean `main` checkout exactly equal to `origin/main`.
 
 ## Version Strategy
 
@@ -93,10 +82,12 @@ Semantic versioning (`v1.0.0`):
 - **Minor** (x.1.x): New features, backwards compatible
 - **Patch** (x.x.1): Bug fixes
 
-All three files must have matching versions:
+All five files must have matching versions:
 
 - `package.json` → `"version": "1.0.0"`
+- `package-lock.json` → top-level and root-package versions
 - `src-tauri/Cargo.toml` → `version = "1.0.0"`
+- `src-tauri/Cargo.lock` → `tauri-ade` package version
 - `src-tauri/tauri.conf.json` → `"version": "1.0.0"`
 
 ## Auto-Update System
@@ -156,24 +147,41 @@ Users can manually check via:
 
 Each release creates:
 
-- **macOS**: `.dmg` installer
-- **Windows**: `.msi` installer (when configured)
-- **Linux**: `.deb` and `.AppImage` (when configured)
-- **Auto-updater**: `latest.json` manifest and `.sig` signature files
+- **macOS**: `.app` bundle (uploaded as `.app.tar.gz`) and `.dmg` installer
+- **Windows**: `.msi` installer
+- **Linux**: `.AppImage`
+- **Auto-updater**: updater archives, `.sig` files, and `latest.json`
 
-## Security
+## Updater Signing
 
-All updates are cryptographically signed:
+Tauri updater payloads are cryptographically signed:
 
-1. Private key signs releases during build
+1. Private key creates updater signatures during build
 2. Public key in config verifies downloads
 3. Invalid signatures are automatically rejected
 
+This release flow does not provide operating-system installer code signing or
+macOS notarization. Those require separate platform credentials and workflow
+steps.
+
+## Recovery
+
+- If preparation fails, no commit or tag is pushed.
+- If dispatch fails after the atomic push, rerun only **Dispatch release** or
+  manually run **Release** with the existing tag.
+- If a platform build or final verification fails, the release remains a
+  draft. Fix the cause and rerun **Release** with the same tag.
+- Re-running an already published tag is a successful no-op.
+
+For the first live release, confirm the release commit, annotated tag, draft
+lifecycle, macOS/Windows/Linux artifacts, signed updater entries in
+`latest.json`, and publication only after the complete matrix succeeds.
+
 ## Troubleshooting
 
-| Issue                    | Solution                                              |
-| ------------------------ | ----------------------------------------------------- |
-| Workflow doesn't trigger | Ensure tag starts with `v` and is pushed              |
-| Build fails              | Check GitHub secrets, run `npm run check:all` locally |
-| Updates not detected     | Verify endpoint URL and public key match              |
-| Download fails           | Check signatures, file permissions, disk space        |
+| Issue                | Solution                                                                 |
+| -------------------- | ------------------------------------------------------------------------ |
+| Preparation fails    | Fix the reported metadata, branch, tag, or quality-gate error            |
+| Dispatch fails       | Rerun **Dispatch release** or dispatch **Release** with the existing tag |
+| Build fails          | Check both updater-signing secrets and rerun the same tag                |
+| Updates not detected | Verify endpoint URL, public key, signatures, and `latest.json`           |

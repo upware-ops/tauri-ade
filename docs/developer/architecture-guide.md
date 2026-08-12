@@ -152,6 +152,32 @@ listen('data-updated', ({ payload }) => {
 
 See [quick-panes.md](./quick-panes.md) for a complete implementation example.
 
+### App Readiness and the Splash Screen
+
+The splash is an **overlay sibling of `MainWindow`, not a gate in front of it**. `MainWindow` mounts and does its work underneath the whole time, so the app is warm the moment the splash lifts and nothing in the real tree remounts. This is the same "CSS visibility over conditional rendering" rule described in [state-management.md](./state-management.md).
+
+Readiness is a plain `useState` (`bootReady`) in `App.tsx` — it has exactly one consumer, so it belongs in neither `ui-store` nor a context.
+
+```tsx
+void Promise.all([
+  Promise.race([initLanguageAndMenu(), wait(SPLASH_MAX_MS)]),
+  wait(SPLASH_MIN_MS),
+]).then(() => setBootReady(true))
+```
+
+- `SPLASH_MIN_MS` (2s) is a floor so the splash is never a flicker.
+- `SPLASH_MAX_MS` (8s) is a ceiling for a **hung** IPC. `initLanguageAndMenu` swallows its own errors, so a thrown failure already resolves; the race exists so a stuck call cannot leave the splash up forever on top of an app that is otherwise working.
+
+`SplashScreen` owns its own exit: when `done` flips it fades, then returns `null`. `App.tsx` renders it unconditionally.
+
+**Hidden until painted.** The main window is created with `"visible": false` and `SplashScreen` calls `getCurrentWindow().show()` on mount, so the first frame the user sees is the splash rather than an empty webview. Three things make that work together:
+
+- `"visible": false` must be repeated in **all four** `tauri.conf.json` files — JSON Merge Patch replaces arrays wholesale, so each platform override redefines `app.windows` from scratch.
+- `core:window:allow-show` is required in `capabilities/default.json`; `core:window:default` does not include it.
+- `tauri_plugin_window_state` runs with `StateFlags::all() - StateFlags::VISIBLE`. With `VISIBLE` set, the plugin restores the saved visibility and shows the window itself, before the frontend has painted anything.
+
+**Pre-paint theme bootstrap.** `index.html` carries a small inline `<style>` + `<script>` that reads `ui-theme` from `localStorage` and puts `light`/`dark` on `<html>` before React mounts, with `#root` painting `var(--background, <fallback>)`. Without it the first frame is unstyled white regardless of theme. `ThemeProvider` remains the source of truth and re-applies the same class a frame later. The background sits on `#root` with the corner radius rather than on `html`, so macOS window transparency and vibrancy are preserved.
+
 ## Security Architecture
 
 ### Tauri Capabilities
