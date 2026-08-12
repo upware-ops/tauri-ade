@@ -1,0 +1,81 @@
+/*
+ * Design-system stylesheet entry, compiled by build-css.mjs into
+ * .design-sync/.cache/ds.css (cfg.cssEntry).
+ *
+ * Mirrors src/App.css minus the Tauri window chrome (fixed viewport,
+ * user-select:none, overflow:hidden, drag regions) which breaks designs
+ * rendered on a scrolling canvas.
+ */
+
+@import 'tailwindcss' source(none);
+@import 'tw-animate-css';
+@import '../src/theme-variables.css';
+
+@source '../src/components/ui/**/*.tsx';
+@source './previews/**/*.tsx';
+
+/*
+ * Tailwind only emits utilities it finds in the scanned sources, so without
+ * this the shipped stylesheet would carry ONLY the classes the components
+ * happen to use — and any layout the design agent writes itself would be
+ * unstyled. This safelist covers the everyday layout/spacing/type vocabulary
+ * plus the full semantic-token colour set.
+ */
+@source inline("{flex,inline-flex,grid,inline-grid,block,inline-block,hidden,contents}");
+@source inline("flex-{row,col,wrap,nowrap,1,auto,initial,none}");
+@source inline("items-{start,center,end,baseline,stretch}");
+@source inline("justify-{start,center,end,between,around,evenly}");
+@source inline("{self,justify-self}-{auto,start,center,end,stretch}");
+@source inline("grid-cols-{1,2,3,4,5,6,7,8,9,10,11,12}");
+@source inline("grid-rows-{1,2,3,4,5,6}");
+@source inline("col-span-{1,2,3,4,5,6,7,8,9,10,11,12,full}");
+@source inline("row-span-{1,2,3,4,5,6,full}");
+@source inline("{gap,gap-x,gap-y}-{0,0.5,1,1.5,2,2.5,3,3.5,4,5,6,7,8,10,12,16,20,24}");
+@source inline("{p,px,py,pt,pr,pb,pl,m,mx,my,mt,mr,mb,ml}-{0,0.5,1,1.5,2,2.5,3,3.5,4,5,6,7,8,10,12,16,20,24,auto}");
+@source inline("{space-x,space-y}-{0,1,1.5,2,3,4,5,6,8}");
+@source inline("w-{0,px,auto,full,screen,fit,min,max,1,2,3,4,5,6,8,10,12,16,20,24,32,40,48,56,64,72,80,96}");
+@source inline("h-{0,px,auto,full,screen,fit,min,max,1,2,3,4,5,6,8,10,12,16,20,24,32,40,48,56,64,72,80,96}");
+@source inline("size-{3,3.5,4,5,6,8,10,12,16,20,24}");
+@source inline("{min-h,max-h}-{0,full,screen,fit,none}");
+@source inline("{min-w,max-w}-{0,full,fit,none,xs,sm,md,lg,xl,2xl,3xl,4xl,5xl,6xl,7xl,prose}");
+@source inline("text-{xs,sm,base,lg,xl,2xl,3xl,4xl,5xl}");
+@source inline("font-{sans,mono,normal,medium,semibold,bold}");
+@source inline("{leading,tracking}-{none,tight,snug,normal,relaxed,loose,wide,wider}");
+@source inline("text-{left,center,right,start,end,balance,pretty,wrap,nowrap}");
+@source inline("{truncate,uppercase,lowercase,capitalize,italic,underline,line-through}");
+@source inline("{whitespace-nowrap,break-words,shrink-0,grow,grow-0,flex-shrink-0}");
+@source inline("rounded{,-none,-xs,-sm,-md,-lg,-xl,-2xl,-3xl,-4xl,-full}");
+@source inline("border{,-0,-2,-4,-t,-r,-b,-l,-x,-y}");
+@source inline("shadow-{none,xs,sm,md,lg,xl,2xl}");
+@source inline("{overflow,overflow-x,overflow-y}-{auto,hidden,visible,scroll,clip}");
+@source inline("{relative,absolute,fixed,sticky,static}");
+@source inline("{inset-0,top-0,right-0,bottom-0,left-0,z-10,z-20,z-30,z-40,z-50}");
+@source inline("{opacity,cursor,select,pointer-events}-{0,50,60,70,80,90,100,pointer,default,text,none,auto,all}");
+@source inline("{,dark:,hover:,focus:,focus-visible:,disabled:,data-[state=open]:}{bg,text,border,ring,fill,stroke,divide,outline}-{background,foreground,card,card-foreground,popover,popover-foreground,primary,primary-foreground,secondary,secondary-foreground,muted,muted-foreground,accent,accent-foreground,destructive,border,input,ring,transparent,current,sidebar,sidebar-foreground,sidebar-primary,sidebar-accent,sidebar-border,chart-1,chart-2,chart-3,chart-4,chart-5}");
+@source inline("{sm:,md:,lg:,xl:}{flex,grid,hidden,block,flex-row,flex-col,grid-cols-{1,2,3,4,6,12},gap-{2,3,4,6,8},p-{2,3,4,6,8},text-{sm,base,lg,xl,2xl}}");
+
+@custom-variant dark (&:is(.dark *));
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+    box-sizing: border-box;
+  }
+
+  body {
+    @apply text-foreground;
+    font-family: -apple-system, 'Segoe UI', 'Roboto', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  svg {
+    color: inherit;
+  }
+
+  .cursor-pointer {
+    cursor: pointer !important;
+  }
+}
