@@ -133,10 +133,10 @@ jobs:
           if ! gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --draft --generate-notes --title "Tauri ADE $TAG" --verify-tag
           fi
-          release=$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG")
-          test "$(jq --raw-output '.draft' <<< "$release")" = 'true'
-          test "$(jq --raw-output '.prerelease' <<< "$release")" = 'false'
-          echo "release_id=$(jq --raw-output '.id' <<< "$release")" >> "$GITHUB_OUTPUT"
+          release=$(gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json databaseId,isDraft,isPrerelease)
+          test "$(jq --raw-output '.isDraft' <<< "$release")" = 'true'
+          test "$(jq --raw-output '.isPrerelease' <<< "$release")" = 'false'
+          echo "release_id=$(jq --raw-output '.databaseId' <<< "$release")" >> "$GITHUB_OUTPUT"
 
   build:
     name: 'Build ${{ matrix.platform }}'
@@ -211,8 +211,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ needs.validate.outputs.tag }}
         run: |
-          release=$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG")
-          test "$(jq --raw-output '.draft' <<< "$release")" = 'true'
+          release=$(gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json assets,isDraft)
+          test "$(jq --raw-output '.isDraft' <<< "$release")" = 'true'
           assets=$(jq --raw-output '.assets[].name' <<< "$release")
           require_asset() {
             grep --quiet --extended-regexp "$1" <<< "$assets" || {
@@ -224,11 +224,9 @@ jobs:
           require_asset '\.app\.tar\.gz$'
           require_asset '\.app\.tar\.gz\.sig$'
           require_asset '\.msi$'
-          require_asset '\.msi\.zip$'
-          require_asset '\.msi\.zip\.sig$'
+          require_asset '\.msi\.sig$'
           require_asset '\.AppImage$'
-          require_asset '\.AppImage\.tar\.gz$'
-          require_asset '\.AppImage\.tar\.gz\.sig$'
+          require_asset '\.AppImage\.sig$'
           require_asset '^latest\.json$'
           mkdir -p "$RUNNER_TEMP/release"
           gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --pattern latest.json --dir "$RUNNER_TEMP/release" --clobber
