@@ -1,6 +1,6 @@
 [package]
 name = "tauri-ade"
-version = "0.1.0"
+version = "0.1.1"
 description = "Agentic Development Environment PoC"
 authors = ["UpWare"]
 edition = "2021"
