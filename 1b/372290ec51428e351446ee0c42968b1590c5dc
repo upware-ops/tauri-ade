@@ -1,0 +1,22 @@
+package.json
+  s_b48a1fa5304146::t_fb542dad0e5697 31-36,38
+.github/workflows/release.yml
+  s_b48a1fa5304146::t_3cd5000d7e8e39 136-139,214-215
+  s_b48a1fa5304146::t_1dd47cd29e81e2 227,229
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.18",
+  "base_commit_sha": "1b372290ec51428e351446ee0c42968b1590c5dc",
+  "prompts": {},
+  "sessions": {
+    "s_b48a1fa5304146": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ff5ce-fa3e-7c23-994a-b7c417510f23",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Pavlo Sheiman <pavel.sheiman@gmail.com>"
+    }
+  }
+}
