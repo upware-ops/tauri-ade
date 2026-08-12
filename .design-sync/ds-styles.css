@@ -51,7 +51,7 @@
 @source inline("{relative,absolute,fixed,sticky,static}");
 @source inline("{inset-0,top-0,right-0,bottom-0,left-0,z-10,z-20,z-30,z-40,z-50}");
 @source inline("{opacity,cursor,select,pointer-events}-{0,50,60,70,80,90,100,pointer,default,text,none,auto,all}");
-@source inline("{,dark:,hover:,focus:,focus-visible:,disabled:,data-[state=open]:}{bg,text,border,ring,fill,stroke,divide,outline}-{background,foreground,card,card-foreground,popover,popover-foreground,primary,primary-foreground,secondary,secondary-foreground,muted,muted-foreground,accent,accent-foreground,destructive,border,input,ring,transparent,current,sidebar,sidebar-foreground,sidebar-primary,sidebar-accent,sidebar-border,chart-1,chart-2,chart-3,chart-4,chart-5}");
+@source inline("{,dark:,hover:,focus:,focus-visible:,disabled:,data-[state=open]:}{bg,text,border,ring,fill,stroke,divide,outline}-{background,foreground,card,card-foreground,popover,popover-foreground,primary,primary-foreground,secondary,secondary-foreground,muted,muted-foreground,accent,accent-foreground,destructive,border,input,ring,transparent,current,brand,sidebar,sidebar-foreground,sidebar-primary,sidebar-accent,sidebar-border,chart-1,chart-2,chart-3,chart-4,chart-5}");
 @source inline("{sm:,md:,lg:,xl:}{flex,grid,hidden,block,flex-row,flex-col,grid-cols-{1,2,3,4,6,12},gap-{2,3,4,6,8},p-{2,3,4,6,8},text-{sm,base,lg,xl,2xl}}");
 
 @custom-variant dark (&:is(.dark *));

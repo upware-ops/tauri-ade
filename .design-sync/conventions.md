@@ -26,6 +26,7 @@ or px radius** — use the token utilities so light/dark both work:
 | Surfaces | `bg-background` `bg-card` `bg-popover` `bg-muted` `bg-accent` `bg-sidebar`                                          |
 | Text     | `text-foreground` `text-muted-foreground` `text-card-foreground` `text-primary-foreground` `text-accent-foreground` |
 | Actions  | `bg-primary` `bg-secondary` `bg-destructive` (+ their `-foreground` pairs)                                          |
+| Brand    | `bg-brand` `text-brand` `border-brand` — the product accent, separate from `primary`                                |
 | Lines    | `border-border` `border-input` `ring-ring` `divide-border`                                                          |
 | Charts   | `text-chart-1` … `text-chart-5` (also `bg-`/`fill-`)                                                                |
 | Radius   | `rounded-sm` `rounded-md` `rounded-lg` `rounded-xl` `rounded-2xl` (all derived from `--radius`)                     |
