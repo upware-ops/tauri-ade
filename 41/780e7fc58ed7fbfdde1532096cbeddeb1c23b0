@@ -1,0 +1,12 @@
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.18",
+  "base_commit_sha": "41780e7fc58ed7fbfdde1532096cbeddeb1c23b0",
+  "prompts": {},
+  "humans": {
+    "h_a7570d1b033b10": {
+      "author": "Pavlo Sheiman <pavel.sheiman@gmail.com>"
+    }
+  }
+}
