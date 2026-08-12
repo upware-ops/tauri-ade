@@ -1,0 +1,23 @@
+{
+  "$schema": "./node_modules/syncpack/schema.json",
+  "semverGroups": [
+    {
+      "label": "Keep application dependencies exact",
+      "dependencies": ["**"],
+      "dependencyTypes": ["prod", "dev"],
+      "range": ""
+    }
+  ],
+  "versionGroups": [
+    {
+      "label": "Enforce exact application dependency specifiers",
+      "dependencies": ["**"],
+      "dependencyTypes": ["prod", "dev"],
+      "policy": "semverRangeOnly"
+    },
+    {
+      "label": "Leave other dependency policies unchanged",
+      "isIgnored": true
+    }
+  ]
+}
