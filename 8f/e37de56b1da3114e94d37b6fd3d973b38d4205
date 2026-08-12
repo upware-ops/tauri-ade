@@ -1,0 +1,25 @@
+.prettierignore
+  s_f0dc335a5cf5d7::t_51aaaffd9433d7 33-35
+.design-sync/designs/app-shell/AppShell.dc.html
+  s_f0dc335a5cf5d7::t_919be27a4ba660 1-151
+.design-sync/designs/app-shell/theme.css
+  s_f0dc335a5cf5d7::t_879cebc97d435f 1-93
+.design-sync/designs/README.md
+  s_f0dc335a5cf5d7::t_d33cb5b8bb48a5 1-45
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.18",
+  "base_commit_sha": "8fe37de56b1da3114e94d37b6fd3d973b38d4205",
+  "prompts": {},
+  "sessions": {
+    "s_f0dc335a5cf5d7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "551c825c-b7b2-4429-aeeb-999b4ebf3ce9",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Pavlo Sheiman <pavel.sheiman@gmail.com>"
+    }
+  }
+}
