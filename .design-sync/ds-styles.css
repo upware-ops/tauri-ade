@@ -75,6 +75,19 @@
     color: inherit;
   }
 
+  /* Matches the app (src/App.css): interactive elements read as clickable
+     without each component opting in. A component that deliberately sets
+     cursor-default or disabled:cursor-not-allowed still wins — utilities
+     layer after base. */
+  button:not(:disabled),
+  summary,
+  select:not(:disabled),
+  label[for],
+  a[href],
+  [role='button']:not([aria-disabled='true']) {
+    cursor: pointer;
+  }
+
   .cursor-pointer {
     cursor: pointer !important;
   }

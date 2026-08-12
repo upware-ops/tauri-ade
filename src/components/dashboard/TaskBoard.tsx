@@ -35,7 +35,7 @@ export function TaskBoard() {
         <span className="flex-1" />
         <button
           type="button"
-          className="flex cursor-pointer items-center gap-[7px] text-xs text-muted-foreground hover:text-foreground"
+          className="flex items-center gap-[7px] text-xs text-muted-foreground hover:text-foreground"
         >
           {t('dashboard.search')}
           <Kbd>⌘K</Kbd>
@@ -46,7 +46,7 @@ export function TaskBoard() {
         <button
           type="button"
           aria-pressed="true"
-          className="cursor-pointer rounded-md bg-accent px-2.5 py-1 text-[12.5px] font-medium"
+          className="rounded-md bg-accent px-2.5 py-1 text-[12.5px] font-medium"
         >
           {t('dashboard.allProjects')}
         </button>
@@ -55,9 +55,12 @@ export function TaskBoard() {
             key={project.id}
             type="button"
             aria-pressed="false"
-            className="flex cursor-pointer items-center gap-1.5 rounded-md px-2.5 py-1 text-[12.5px] text-muted-foreground hover:bg-accent"
+            className="flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[12.5px] text-muted-foreground hover:bg-accent"
           >
-            <span className="flex size-3.5 items-center justify-center rounded-[3px] bg-secondary text-[8px] font-bold">
+            <span
+              aria-hidden
+              className="flex size-3.5 items-center justify-center rounded-[3px] bg-secondary text-[8px] font-bold"
+            >
               {project.name.charAt(0).toUpperCase()}
             </span>
             {project.name}

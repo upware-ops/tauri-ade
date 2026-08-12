@@ -28,7 +28,7 @@ export function TaskCard({ task }: TaskCardProps) {
       </p>
 
       <div className="mt-3 flex items-center gap-2.5">
-        <Button variant="outline" size="sm" className="cursor-pointer">
+        <Button variant="outline" size="sm">
           {inReview
             ? t('dashboard.action.readyForReview')
             : t('dashboard.action.createPr')}
@@ -36,7 +36,7 @@ export function TaskCard({ task }: TaskCardProps) {
         {task.pullRequest && (
           <a
             href={task.pullRequest.url}
-            className="cursor-pointer font-mono text-[11px] text-brand hover:underline"
+            className="font-mono text-[11px] text-brand hover:underline"
           >
             #{task.pullRequest.number} ↗
           </a>

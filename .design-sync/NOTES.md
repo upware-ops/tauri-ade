@@ -141,6 +141,17 @@ theme is revised in Claude Design again, re-port the same way — do not hand-ed
 
 ## Known render warns
 
+- `[FONT_MISSING] "SF Pro Text", "Inter", "Geist Mono"` — appeared when the redesigned theme
+  introduced real font stacks (before that both font vars were broken, so no family was named).
+  **Not resolved, deliberately, and only partly benign:**
+  - `--font-sans` is a _system-first_ stack (`ui-sans-serif, -apple-system, …`), so `SF Pro Text`
+    and `Inter` are late fallbacks that never need shipping. Correct as-is.
+  - `--font-mono` puts **`Geist Mono` first** and it is NOT installed or bundled, so every
+    mono run (diff stats, branch names, `FREE` badge, kbd) actually renders in SF Mono/Menlo
+    — in the app _and_ in Claude Design. To fix properly: drop the woff2 into the repo and
+    point `cfg.extraFonts` at it, then re-sync. Until then this is a real, if small, deviation
+    from the design.
+
 - ~~`[TOKENS_MISSING] 2`~~ FIXED by the theme port below — both font vars now resolve. Historical: — `--font-sans` is self-referential in `src/theme-variables.css`
   (`--font-sans: var(--font-sans)`) and `--font-mono` points at an undefined
   `--font-geist-mono`. Text falls back to the base-layer system stack, which is what the app

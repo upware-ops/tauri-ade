@@ -73,6 +73,33 @@
     cursor: pointer !important;
   }
 
+  /* The `* { cursor: default }` above matches descendants too, so labels and
+     icons inside a clickable element would reset to the arrow. Inputs keep
+     their text cursor via the !important rule above. */
+  .cursor-pointer * {
+    cursor: inherit;
+  }
+
+  /* Interactive elements read as clickable without each component opting in.
+     `*` has zero specificity, so these win; a component that deliberately
+     sets cursor-default / disabled:cursor-not-allowed still wins over these,
+     since utilities layer after base. */
+  button:not(:disabled),
+  summary,
+  select:not(:disabled),
+  label[for],
+  a[href],
+  [role='button']:not([aria-disabled='true']) {
+    cursor: pointer;
+  }
+
+  button:not(:disabled) *,
+  select:not(:disabled) *,
+  a[href] *,
+  [role='button']:not([aria-disabled='true']) * {
+    cursor: inherit;
+  }
+
   /* Required for drag regions to work with touch/pen on Windows */
   *[data-tauri-drag-region] {
     -webkit-app-region: drag;

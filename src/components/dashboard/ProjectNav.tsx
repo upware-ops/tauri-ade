@@ -5,7 +5,6 @@ import {
   GitBranch,
   Home,
   LayoutGrid,
-  ListFilter,
   Plus,
   Search,
   Settings,
@@ -14,6 +13,7 @@ import {
 import { useUIStore } from '@/store/ui-store'
 import { cn } from '@/lib/utils'
 import { DiffStat } from './DiffStat'
+import { ProjectFilterMenu } from './ProjectFilterMenu'
 import { SAMPLE_PROJECTS } from './sample-data'
 
 const NAV = [
@@ -24,7 +24,11 @@ const NAV = [
 ] as const
 
 const iconButton =
-  'inline-flex cursor-pointer rounded p-0.5 text-muted-foreground hover:text-foreground'
+  'inline-flex rounded p-0.5 text-muted-foreground hover:text-foreground'
+
+/** Initials are decorative — the adjacent name already carries the label. */
+const avatar =
+  'flex items-center justify-center bg-secondary text-muted-foreground'
 
 export function ProjectNav() {
   const { t } = useTranslation()
@@ -38,9 +42,15 @@ export function ProjectNav() {
       <button
         type="button"
         aria-haspopup="menu"
-        className="flex cursor-pointer items-center gap-2 px-3.5 pt-4 pb-2.5 text-foreground"
+        className="flex items-center gap-2 px-3.5 pt-4 pb-2.5 text-foreground"
       >
-        <span className="flex size-5 items-center justify-center rounded-full bg-secondary text-[10px] font-semibold text-muted-foreground">
+        <span
+          aria-hidden
+          className={cn(
+            avatar,
+            'size-5 rounded-full text-[10px] font-semibold'
+          )}
+        >
           A
         </span>
         <span className="font-semibold">Acme&rsquo;s Mac</span>
@@ -57,7 +67,7 @@ export function ProjectNav() {
               type="button"
               aria-current={active ? 'page' : undefined}
               className={cn(
-                'flex cursor-pointer items-center gap-2.5 rounded-md px-2 py-1.5 text-start',
+                'flex items-center gap-2.5 rounded-md px-2 py-1.5 text-start',
                 active
                   ? 'bg-sidebar-accent text-foreground'
                   : 'hover:bg-sidebar-accent'
@@ -73,34 +83,41 @@ export function ProjectNav() {
       <div className="flex items-center px-4 pt-[18px] pb-1.5 text-xs font-medium text-muted-foreground">
         {t('dashboard.projects')}
         <span className="flex-1" />
-        <button
-          type="button"
-          aria-label={t('dashboard.filterProjects')}
-          className={iconButton}
-        >
-          <ListFilter className="size-[13px]" />
-        </button>
+        <ProjectFilterMenu />
       </div>
 
       <div className="flex flex-1 flex-col gap-px overflow-y-auto px-2 pb-2">
         {SAMPLE_PROJECTS.map((project, projectIndex) => (
           <div key={project.id} className="contents">
-            <button
-              type="button"
+            {/* Two sibling buttons, not one nested in the other: a control
+                inside a button is unreachable by keyboard and its label leaks
+                into the parent's accessible name. */}
+            <div
               className={cn(
-                'flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-foreground hover:bg-sidebar-accent',
+                'flex items-center rounded-md pe-2 hover:bg-sidebar-accent',
                 projectIndex > 0 && 'mt-2'
               )}
             >
-              <span className="flex size-4 items-center justify-center rounded bg-secondary text-[9px] font-bold text-muted-foreground">
-                {project.name.charAt(0).toUpperCase()}
-              </span>
-              <span className="font-medium">{project.name}</span>
-              <span className="flex-1" />
-              <span aria-label={t('dashboard.newTask')} className={iconButton}>
+              <button
+                type="button"
+                className="flex min-w-0 flex-1 items-center gap-2 rounded-md px-2 py-1.5 text-start text-foreground"
+              >
+                <span
+                  aria-hidden
+                  className={cn(avatar, 'size-4 rounded text-[9px] font-bold')}
+                >
+                  {project.name.charAt(0).toUpperCase()}
+                </span>
+                <span className="truncate font-medium">{project.name}</span>
+              </button>
+              <button
+                type="button"
+                aria-label={t('dashboard.newTask', { project: project.name })}
+                className={iconButton}
+              >
                 <Plus className="size-3" />
-              </span>
-            </button>
+              </button>
+            </div>
 
             {project.items.map(item => (
               <button
@@ -109,7 +126,7 @@ export function ProjectNav() {
                 aria-current={item.active ? 'true' : undefined}
                 title={item.label}
                 className={cn(
-                  'flex cursor-pointer items-center gap-[7px] rounded-md py-[5px] pe-2 ps-[26px]',
+                  'flex items-center gap-[7px] rounded-md py-[5px] pe-2 ps-[26px]',
                   item.active
                     ? 'bg-sidebar-accent text-foreground'
                     : 'hover:bg-sidebar-accent'
