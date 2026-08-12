@@ -1,0 +1,19 @@
+src/theme-variables.css
+  s_f0dc335a5cf5d7::t_0c24347d331a9f 14,55-92,97-127
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.18",
+  "base_commit_sha": "26ad8d4376823569e1c520c580ed030303811520",
+  "prompts": {},
+  "sessions": {
+    "s_f0dc335a5cf5d7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "551c825c-b7b2-4429-aeeb-999b4ebf3ce9",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Pavlo Sheiman <pavel.sheiman@gmail.com>"
+    }
+  }
+}
