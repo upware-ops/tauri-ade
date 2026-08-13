@@ -12,7 +12,6 @@
 @import '../src/theme-variables.css';
 
 @source '../src/components/ui/**/*.tsx';
-@source './previews/**/*.tsx';
 
 /*
  * Tailwind only emits utilities it finds in the scanned sources, so without

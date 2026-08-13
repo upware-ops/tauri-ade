@@ -6,37 +6,8 @@
   "srcDir": "src/components/ui",
   "tsconfig": "tsconfig.json",
   "cssEntry": ".design-sync/.cache/ds.css",
-  "docsDir": ".design-sync/docs",
   "readmeHeader": ".design-sync/conventions.md",
   "guidelinesGlob": [],
-  "libOverrides": {
-    "story-imports.mjs": "rule 2's per-import b.resolve is 200x slower than esbuild's own resolution on this graph"
-  },
-  "overrides": {
-    "Dialog": { "cardMode": "single", "viewport": "760x460" },
-    "AlertDialog": { "cardMode": "single", "viewport": "760x420" },
-    "Sheet": { "cardMode": "single", "viewport": "760x480" },
-    "Popover": { "cardMode": "single", "viewport": "700x400" },
-    "DropdownMenu": { "cardMode": "single", "viewport": "700x480" },
-    "Toaster": { "cardMode": "single", "viewport": "600x320" },
-    "Sidebar": { "cardMode": "single", "viewport": "700x400" },
-    "Card": { "cardMode": "column" },
-    "Field": { "cardMode": "column" },
-    "Tooltip": {
-      "cardMode": "single",
-      "primaryStory": "Open",
-      "viewport": "560x260"
-    },
-    "Textarea": { "cardMode": "column" },
-    "Switch": { "cardMode": "column" },
-    "TagInput": { "cardMode": "column" },
-    "InputGroup": { "cardMode": "column" },
-    "Command": { "cardMode": "column" },
-    "Alert": { "cardMode": "column" },
-    "Empty": { "cardMode": "column" },
-    "Item": { "cardMode": "column" },
-    "ResizablePanelGroup": { "cardMode": "column" }
-  },
   "componentSrcMap": {
     "AlertDescription": null,
     "AlertDialogAction": null,
