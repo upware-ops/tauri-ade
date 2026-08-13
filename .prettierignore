@@ -20,13 +20,5 @@ package-lock.json
 .git/
 src/lib/bindings.ts
 
-# Forked upstream file — keep byte-comparable against the design-sync lib it came from
-.design-sync/overrides/
-
-# design-sync generated artifacts (gitignored)
-.ds-sync/
-ds-bundle/
-types/
-
 # Logs
 *.log
