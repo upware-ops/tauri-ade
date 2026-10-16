@@ -14,6 +14,10 @@ interface DatePickerProps {
   onChange?: (date: Date | undefined) => void
   placeholder?: string
   className?: string
+  id?: string
+  'aria-label'?: string
+  disabled?: boolean
+  clearLabel?: string
 }
 
 function DatePicker({
@@ -21,6 +25,10 @@ function DatePicker({
   onChange,
   placeholder = 'Select date',
   className,
+  id,
+  'aria-label': ariaLabel,
+  disabled,
+  clearLabel = 'Clear',
 }: DatePickerProps) {
   const [open, setOpen] = React.useState(false)
 
@@ -28,6 +36,9 @@ function DatePicker({
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
+          id={id}
+          aria-label={ariaLabel}
+          disabled={disabled}
           variant="outline"
           className={`w-full justify-between font-normal ${className || ''}`}
         >
@@ -35,7 +46,7 @@ function DatePicker({
           <ChevronDownIcon className="size-4" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto overflow-hidden p-0" align="start">
+      <PopoverContent className="w-auto overflow-x-hidden p-0" align="start">
         <Calendar
           mode="single"
           selected={value}
@@ -56,7 +67,7 @@ function DatePicker({
                 setOpen(false)
               }}
             >
-              Clear
+              {clearLabel}
             </Button>
           </div>
         )}

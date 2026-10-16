@@ -8,6 +8,7 @@ import {
   PanelRight,
   PanelRightClose,
   Settings,
+  Boxes,
 } from 'lucide-react'
 
 /**
@@ -48,12 +49,13 @@ export function TitleBarLeftActions() {
  */
 export function TitleBarRightActions() {
   const { t } = useTranslation()
+  const activeView = useUIStore(state => state.activeView)
   const rightSidebarVisible = useUIStore(state => state.rightSidebarVisible)
   const toggleRightSidebar = useUIStore(state => state.toggleRightSidebar)
   const commandContext = useCommandContext()
 
-  const handleOpenPreferences = async () => {
-    const result = await executeCommand('open-preferences', commandContext)
+  const handleCommand = async (commandId: string) => {
+    const result = await executeCommand(commandId, commandContext)
     if (!result.success && result.error) {
       commandContext.showToast(result.error, 'error')
     }
@@ -62,11 +64,24 @@ export function TitleBarRightActions() {
   return (
     <div className="flex items-center gap-1">
       <Button
-        onClick={handleOpenPreferences}
+        onClick={() => void handleCommand('open-library')}
+        variant="ghost"
+        size="icon"
+        className="h-6 w-6 text-foreground/70 hover:text-foreground"
+        title={t('library.title')}
+        aria-label={t('library.title')}
+        aria-current={activeView === 'library' ? 'page' : undefined}
+      >
+        <Boxes className="h-3 w-3" />
+      </Button>
+
+      <Button
+        onClick={() => void handleCommand('open-preferences')}
         variant="ghost"
         size="icon"
         className="h-6 w-6 text-foreground/70 hover:text-foreground"
         title={t('titlebar.settings')}
+        aria-label={t('titlebar.settings')}
       >
         <Settings className="h-3 w-3" />
       </Button>
@@ -100,10 +115,14 @@ interface TitleBarTitleProps {
  * Centered title for the title bar.
  * Uses absolute positioning to stay centered regardless of other content.
  */
-export function TitleBarTitle({ title = 'Tauri ADE' }: TitleBarTitleProps) {
+export function TitleBarTitle({ title }: TitleBarTitleProps) {
+  const { t } = useTranslation()
+
   return (
     <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-      <span className="text-sm font-medium text-foreground/80">{title}</span>
+      <span className="text-sm font-medium text-foreground/80">
+        {title ?? t('app.name')}
+      </span>
     </div>
   )
 }
@@ -114,7 +133,7 @@ export function TitleBarTitle({ title = 'Tauri ADE' }: TitleBarTitleProps) {
  *
  * For more control, use TitleBarLeftActions, TitleBarRightActions, and TitleBarTitle separately.
  */
-export function TitleBarContent({ title = 'Tauri ADE' }: TitleBarTitleProps) {
+export function TitleBarContent({ title }: TitleBarTitleProps) {
   return (
     <>
       <TitleBarLeftActions />

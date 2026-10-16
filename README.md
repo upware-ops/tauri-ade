@@ -32,19 +32,20 @@ The current application foundation includes:
 - **Command Palette** (`Cmd+K`) - Searchable command launcher with keyboard navigation
 - **Quick Pane** - Global shortcut (`Cmd+Shift+.`) opens a floating window from any app, even fullscreen. Uses native NSPanel on macOS for proper fullscreen overlay behavior.
 - **Keyboard Shortcuts** - Platform-aware shortcuts with automatic menu integration
-- **Native Menus** - File, Edit, View menus built from JavaScript with full i18n support
+- **Native Menus** - macOS menu bar (App, Edit, View, Window) built from JavaScript with full i18n support
+- **Background Mode** - Closing the window hides it; a tray icon (Show/Quit) on every platform, the palette's Quit, and on macOS ⌘Q or the Dock quit the app
 - **Preferences System** - Settings dialog with Rust-side persistence, React hooks, and type-safe access throughout
-- **Collapsible Sidebars** - Empty left and right sidebars with state persistence via resizable panels
+- **Collapsible Sidebars** - Empty left and right resizable sidebars (visibility and width reset at launch)
 - **Theme System** - Light/dark mode with system preference detection, synced across windows
 - **Notifications** - Toast notifications for in-app feedback, plus native system notifications
-- **Updater integration** - GitHub Releases wiring and update checks, pending release signing-key setup
+- **Updater integration** - Signed update artifacts on GitHub Releases, with native install and restart prompts
 - **Logging** - Structured logging utilities for both Rust and TypeScript with consistent formatting
 - **Crash Recovery** - Emergency data persistence for recovering unsaved work after unexpected exits
 
 ### Architecture Patterns
 
 - **Three-layer state management** - Clear decision tree: `useState` (component) → `Zustand` (global UI) → `TanStack Query` (persistent data)
-- **Event-driven Rust-React bridge** - Menus, shortcuts, and command palette all route through the same command system
+- **Shared actions** - The command palette dispatches through a command registry; menus and shortcuts call the same store actions and `src/lib/app-actions.ts`
 - **React Compiler** - Automatic memoization means no manual `useMemo`/`useCallback` needed
 
 ### Cross-Platform

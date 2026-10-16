@@ -36,7 +36,7 @@ logger.error('Request failed', { error: response.error })
 ### TypeScript Frontend
 
 - **Development**: All logs go to browser console
-- **Production**: Console logging only (keeps it simple)
+- **Production**: `warn` and `error` are forwarded to the Rust log through `@tauri-apps/plugin-log`, which needs `log:default` in the window's capability; other levels are dropped
 - Logger utility at `src/lib/logger.ts`
 
 ## Log Levels
@@ -59,9 +59,13 @@ logger.error('Request failed', { error: response.error })
 ### Production
 
 - **Rust**: Terminal (stdout) + log file in app log directory
-- **TypeScript**: Browser DevTools console
+- **TypeScript**: `warn`/`error` in the same log file
 
-Log directory locations vary by platform (e.g., `~/Library/Logs/` on macOS).
+The log file is `Tauri ADE.log` in:
+
+- **macOS:** `~/Library/Logs/com.upware-ops.tauri-ade/`
+- **Windows:** `%LOCALAPPDATA%\com.upware-ops.tauri-ade\logs\`
+- **Linux:** `~/.local/share/com.upware-ops.tauri-ade/logs/`
 
 ## Examples
 
@@ -121,4 +125,4 @@ See [error-handling.md](./error-handling.md) for patterns on when to log vs show
 - Rust logs go to the app's log directory (platform-specific location)
 - No sensitive data should be logged (passwords, tokens, etc.)
 - The plugin supports log rotation when files reach size limits
-- Frontend logs stay in browser - not sent to backend by default
+- Frontend `warn`/`error` reach the log file in production builds; import `{ logger }`, since there are no standalone `info`/`warn` exports

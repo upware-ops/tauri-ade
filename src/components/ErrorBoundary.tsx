@@ -1,4 +1,6 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react'
+import { getCurrentWindow } from '@tauri-apps/api/window'
+import i18n from '@/i18n/config'
 import { saveCrashState } from '@/lib/recovery'
 import { logger } from '@/lib/logger'
 
@@ -40,8 +42,18 @@ export class ErrorBoundary extends Component<Props, State> {
 
     this.setState({ errorInfo })
 
+    this.showWindow()
+
     // Save crash state asynchronously (don't block error UI)
     this.saveCrashData(error, errorInfo)
+  }
+
+  private async showWindow() {
+    try {
+      await getCurrentWindow().show()
+    } catch (showError) {
+      logger.error('Failed to show window after crash', { showError })
+    }
   }
 
   private async saveCrashData(error: Error, errorInfo: ErrorInfo) {
@@ -98,11 +110,10 @@ export class ErrorBoundary extends Component<Props, State> {
                 </svg>
               </div>
               <h1 className="text-2xl font-bold text-foreground mb-2">
-                Something went wrong
+                {i18n.t('errorBoundary.title')}
               </h1>
               <p className="text-muted-foreground mb-6">
-                The application encountered an unexpected error. Your data has
-                been saved automatically.
+                {i18n.t('errorBoundary.message')}
               </p>
             </div>
 
@@ -111,21 +122,21 @@ export class ErrorBoundary extends Component<Props, State> {
                 onClick={this.handleReload}
                 className="w-full px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
               >
-                Reload Application
+                {i18n.t('errorBoundary.reload')}
               </button>
 
               <button
                 onClick={this.handleReset}
                 className="w-full px-4 py-2 bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/90 transition-colors"
               >
-                Try Again
+                {i18n.t('errorBoundary.tryAgain')}
               </button>
             </div>
 
             {import.meta.env.DEV && this.state.error && (
               <details className="mt-6 text-left">
                 <summary className="cursor-pointer text-sm text-muted-foreground hover:text-foreground">
-                  Error Details (Development Only)
+                  {i18n.t('errorBoundary.details')}
                 </summary>
                 <div className="mt-2 p-3 bg-muted rounded-md text-xs font-mono">
                   <div className="text-destructive font-semibold mb-1">

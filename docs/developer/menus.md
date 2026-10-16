@@ -26,10 +26,29 @@ App Name
 ├── ────────────────────
 └── Quit App Name            (Cmd+Q)
 
+Edit
+├── Undo / Redo
+├── ────────────────────
+└── Cut / Copy / Paste / Select All
+
 View
 ├── Toggle Left Sidebar      (Cmd+1)
 └── Toggle Right Sidebar     (Cmd+2)
+
+Window
+├── Minimize                 (Cmd+M)
+├── Zoom
+├── ────────────────────
+├── Toggle Full Screen       (Ctrl+Cmd+F)
+├── ────────────────────
+└── Close Window             (Cmd+W)
 ```
+
+`buildAppMenu()` builds the menu on macOS only; Windows and Linux have no native menu bar. Three things are non-obvious:
+
+- **Edit menu:** macOS text fields need it for ⌘C/⌘V/⌘X/⌘A/⌘Z.
+- **Window items:** they're custom `MenuItem`s, because AppKit's predefined window items need a title bar and the main window is borderless. Unlike predefined items they don't follow the key window, so `whenMainWindowFocused()` makes them no-ops unless `main` has focus.
+- **Showing UI:** the menu bar stays usable while `main` is hidden. Actions that show UI there (About, Check for Updates, Preferences…, sidebar toggles) call `getCurrentWindow().show()` first.
 
 ## Architecture
 
@@ -172,10 +191,10 @@ This ensures handlers always have access to current state values.
 
 ## Platform Differences
 
-| Platform      | Menu Location    | Modifier Key |
-| ------------- | ---------------- | ------------ |
-| macOS         | System menu bar  | Cmd          |
-| Windows/Linux | Window title bar | Ctrl         |
+| Platform      | Menu Location                        | Modifier Key |
+| ------------- | ------------------------------------ | ------------ |
+| macOS         | System menu bar                      | Cmd          |
+| Windows/Linux | None (title bar and palette instead) | Ctrl         |
 
 The `CmdOrCtrl` accelerator automatically uses the correct modifier per platform.
 

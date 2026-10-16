@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/Icon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tauri ADE Splash</title>
+    <style>
+      /* Pre-paint only: in dev the stylesheet is injected by the bundle, so the
+         tokens do not exist on the first frame. Fallbacks equal the token values. */
+      #root {
+        min-height: 100vh;
+        border-radius: var(--app-corner-radius, 12px);
+        background: var(--background, #f5f4f2);
+      }
+      html.dark #root {
+        background: var(--background, #151110);
+      }
+    </style>
+    <script>
+      ;(function () {
+        var t = localStorage.getItem('ui-theme') || 'system'
+        var dark =
+          t === 'dark' ||
+          (t === 'system' && matchMedia('(prefers-color-scheme: dark)').matches)
+        document.documentElement.classList.add(dark ? 'dark' : 'light')
+      })()
+    </script>
+  </head>
+
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/splash-main.tsx"></script>
+  </body>
+</html>

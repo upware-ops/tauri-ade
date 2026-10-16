@@ -1,4 +1,5 @@
 import React, { useEffect, useState, type HTMLProps } from 'react'
+import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
 import { MacOSIcons } from './WindowControlIcons'
 import { useCommandContext } from '@/hooks/use-command-context'
@@ -13,6 +14,7 @@ export function MacOSWindowControls({
   className,
   ...props
 }: MacOSWindowControlsProps) {
+  const { t } = useTranslation()
   const context = useCommandContext()
   const [isAltKeyPressed, setIsAltKeyPressed] = useState(false)
   const [isHovering, setIsHovering] = useState(false)
@@ -134,7 +136,7 @@ export function MacOSWindowControls({
       <button
         type="button"
         onClick={handleClose}
-        aria-label="Close window"
+        aria-label={t('windowControls.close')}
         className={cn(
           'group flex h-3 w-3 cursor-default items-center justify-center rounded-full border text-center text-black/60 hover:bg-[#ff544d] hover:border-black/[.12] active:bg-[#bf403a] active:text-black/60 dark:border-none',
           isWindowFocused
@@ -151,7 +153,7 @@ export function MacOSWindowControls({
       <button
         type="button"
         onClick={handleMinimize}
-        aria-label="Minimize window"
+        aria-label={t('windowControls.minimize')}
         className={cn(
           'group flex h-3 w-3 cursor-default items-center justify-center rounded-full border text-center text-black/60 hover:bg-[#ffbd2e] hover:border-black/[.12] active:bg-[#bf9122] active:text-black/60 dark:border-none',
           isWindowFocused
@@ -168,7 +170,11 @@ export function MacOSWindowControls({
       <button
         type="button"
         onClick={handleMaximizeOrFullscreen}
-        aria-label={isAltKeyPressed ? 'Maximize window' : 'Enter fullscreen'}
+        aria-label={t(
+          isAltKeyPressed
+            ? 'windowControls.maximize'
+            : 'windowControls.fullscreen'
+        )}
         className={cn(
           'group flex h-3 w-3 cursor-default items-center justify-center rounded-full border text-center text-black/60 hover:bg-[#28c93f] hover:border-black/[.12] active:bg-[#1e9930] active:text-black/60 dark:border-none',
           isWindowFocused

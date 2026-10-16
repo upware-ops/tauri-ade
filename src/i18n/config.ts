@@ -27,6 +27,7 @@ i18n.on('languageChanged', lng => {
   const dir = rtlLanguages.includes(lng) ? 'rtl' : 'ltr'
   document.documentElement.dir = dir
   document.documentElement.lang = lng
+  localStorage.setItem('ui-language', lng)
 })
 
 export default i18n

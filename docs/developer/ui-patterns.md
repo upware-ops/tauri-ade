@@ -361,3 +361,29 @@ This preserves scroll position, form state, and resize dimensions.
 - Override shadcn components in place (copy and modify instead)
 - Add `cursor-pointer` everywhere (only for actual clickable elements)
 - Use viewport-based responsive design (this is a fixed-size desktop app)
+
+## Component Library Playground
+
+The main window starts on `HomeScreen`, preserving the empty greeting and latest quick-pane entry. `useUIStore.activeView` switches between Home and the interactive library from `src/components/component-library/`; this navigation state is not persisted. `AppNavigation` lists the library beside Settings, and the title bar, command palette and macOS app menu also expose it. The library's section links and token inspector appear on its screen; Home keeps the original empty right panel.
+
+The same library components are available at `/library.html` in the Vite frontend, without native IPC. Mock state stays local to each example; **Reset demo** remounts the examples without changing project data or preferences. Leaving the library unmounts its examples.
+
+Settings remains the shared `PreferencesDialog` overlay. Its General, Appearance and Advanced tabs use the design-system primitives and remain visible at narrow window sizes; the content area scrolls independently of the dialog header and tabs. `SettingsField` associates labels and descriptions with each control, and `preferences.css` uses the shared surface, grain and typography tokens.
+
+The floating quick pane uses the shared `InputGroup` and `Kbd` components over the main grain surface. Enter still submits its text through `quick-pane-submit`; Home retains the latest entry while switching screens.
+
+The shared primitives include the reference Avatar, FilterChip, InputOTP, Progress, Slider, Tabs, StatusIcon and Throbber. Existing Radix controls retain their APIs.
+
+`theme-variables.css` contains the warm neutral design tokens. Inter and Geist Mono are bundled under `public/fonts/`. Grain is a repeating background texture beneath content: XS for controls, SM for sidebars, MD for workspace backgrounds, and LG for comparison. The four PNGs are derived from the reference `grain-presets.glsl`; they do not require one WebGL context per control.
+
+`SplashArtwork` is shared by the native startup splash and the playground and uses the main area's `--background` and `--grain-main` material. The neural mesh and its static RGBA fallback are transparent, so both themes use that same surface. `ShaderSurface` hides the fallback while WebGL renders, pauses offscreen and hidden animations, respects reduced motion, and releases its GPU resources on unmount. Keep the five-second readiness gate in `SplashScreen`; `StartupSplash` forwards readiness, and `App` owns main readiness and reveal events.
+
+The splash uses a centered 1000×700 logical-pixel default, scaled down uniformly to fit within 80% of the primary monitor's usable work area. The first-run main window starts centered at 1280×800 logical pixels, capped to the usable work area, with the same 1280×800 resize minimum unless the monitor is smaller. Splash artwork keeps a centered 10:7 composition inside its background surface, so the mesh, text and fallback retain their proportions even when the containing area has a different shape. Startup waits for at least 5 visible seconds and the shader's first completed animation period.
+
+Rust applies the main window's final bounds while hidden, then shows it without animated resizing. AppKit's automatic show/hide animations are also disabled on macOS to keep the first visible bounds at their final size. The main window is rendered underneath an opaque matching grain cover from its first paint. After the main window is shown, `App` waits two animation frames and acknowledges its paint to Rust, which hides and closes the splash. `StartupReveal` keeps the final-size cover opaque for 300ms, then fades it over 300ms with ease-in-out timing and enables the already-mounted content. Reduced motion skips the hold and fade; bounded native and frontend fallbacks keep a failed handoff from trapping the window behind the cover.
+
+`window_state.rs` persists the main window's normal size in `main-window-state.json`. Normal windows start centered on the primary monitor; ordinary moves stay in memory and never enter the saved record. Maximized windows also save their monitor position and normal restore position. Fullscreen is tracked separately and keeps the last normal size without saving a position. The previous window-state plugin record is read only when migrating existing settings; the splash is excluded from persistence. The native main window caps both dimensions to the monitor work area and clamps restored positions so its header remains reachable; minimum dimensions shrink when the available area is smaller. Event-driven fitting runs at `MainEventsCleared`, while startup commits Cocoa geometry before showing the main window. Move-only event batches refresh size constraints without clamping the drag position, so a small monitor's limits do not remain after moving to a larger screen. Batches with resize, scale or focus events also fit the window's placement.
+
+`MainWindow` keeps the viewport fixed while its content pane scrolls. Dialogs, sheets and popovers constrain their height and scroll their contents; the splash preview preserves its aspect ratio inside the available height.
+
+Control backgrounds use the opaque `--control` composite of the reference base and ghost tint, so workspace grain cannot show through the control's XS material. Shader drawing buffers use untransformed canvas client dimensions, so a modal's entrance zoom does not leave the shader undersampled.

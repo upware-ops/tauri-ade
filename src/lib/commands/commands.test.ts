@@ -98,6 +98,12 @@ describe('Simplified Command System', () => {
         expect(matchesSearch).toBe(true)
       })
     })
+
+    it('filters commands by keyword', () => {
+      const searchResults = getAllCommands(mockContext, 'settings', mockT)
+
+      expect(searchResults.map(cmd => cmd.id)).toContain('open-preferences')
+    })
   })
 
   describe('Command Execution', () => {

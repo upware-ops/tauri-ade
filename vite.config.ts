@@ -29,6 +29,8 @@ export default defineConfig(async () => ({
     rolldownOptions: {
       input: {
         main: resolve(import.meta.dirname, 'index.html'),
+        library: resolve(import.meta.dirname, 'library.html'),
+        splash: resolve(import.meta.dirname, 'splash.html'),
         'quick-pane': resolve(import.meta.dirname, 'quick-pane.html'),
       },
     },

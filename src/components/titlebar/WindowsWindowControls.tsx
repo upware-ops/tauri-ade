@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
 import { useCommandContext } from '@/hooks/use-command-context'
 import { executeCommand } from '@/lib/commands'
@@ -10,6 +11,7 @@ import { WindowsIcons } from './WindowControlIcons'
  * Positioned on the RIGHT side of the title bar, following Windows conventions.
  */
 export function WindowsWindowControls() {
+  const { t } = useTranslation()
   const context = useCommandContext()
   const [isMaximized, setIsMaximized] = useState(false)
 
@@ -66,19 +68,7 @@ export function WindowsWindowControls() {
   }
 
   const handleMaximizeToggle = async () => {
-    try {
-      const appWindow = getCurrentWindow()
-      const maximized = await appWindow.isMaximized()
-      if (maximized) {
-        await appWindow.unmaximize()
-        setIsMaximized(false)
-      } else {
-        await appWindow.maximize()
-        setIsMaximized(true)
-      }
-    } catch {
-      await executeCommand('window-toggle-maximize', context)
-    }
+    await executeCommand('window-toggle-maximize', context)
   }
 
   // Base button styles for Windows controls
@@ -92,8 +82,8 @@ export function WindowsWindowControls() {
         type="button"
         onClick={handleMinimize}
         className={cn(buttonClass, 'hover:bg-foreground/10')}
-        title="Minimize"
-        aria-label="Minimize window"
+        title={t('windowControls.minimize')}
+        aria-label={t('windowControls.minimize')}
       >
         <WindowsIcons.minimize />
       </button>
@@ -103,8 +93,12 @@ export function WindowsWindowControls() {
         type="button"
         onClick={handleMaximizeToggle}
         className={cn(buttonClass, 'hover:bg-foreground/10')}
-        title={isMaximized ? 'Restore' : 'Maximize'}
-        aria-label={isMaximized ? 'Restore window' : 'Maximize window'}
+        title={t(
+          isMaximized ? 'windowControls.restore' : 'windowControls.maximize'
+        )}
+        aria-label={t(
+          isMaximized ? 'windowControls.restore' : 'windowControls.maximize'
+        )}
       >
         {isMaximized ? <WindowsIcons.restore /> : <WindowsIcons.maximize />}
       </button>
@@ -117,8 +111,8 @@ export function WindowsWindowControls() {
           buttonClass,
           'hover:bg-destructive hover:text-destructive-foreground'
         )}
-        title="Close"
-        aria-label="Close window"
+        title={t('windowControls.close')}
+        aria-label={t('windowControls.close')}
       >
         <WindowsIcons.close />
       </button>

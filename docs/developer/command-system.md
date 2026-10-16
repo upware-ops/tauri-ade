@@ -125,7 +125,7 @@ Link shortcuts to commands via the command context:
 ```typescript
 // src/hooks/use-keyboard-shortcuts.ts
 const handleKeyDown = (e: KeyboardEvent) => {
-  if (e.metaKey || e.ctrlKey) {
+  if (isMacOS ? e.metaKey : e.ctrlKey) {
     switch (e.key) {
       case ',': {
         e.preventDefault()
@@ -139,12 +139,14 @@ const handleKeyDown = (e: KeyboardEvent) => {
 
 ### Native Menus
 
-Menu events trigger commands through Tauri events:
+The macOS menu is built in `src/lib/menu.ts`. Each item's `action` calls store actions or `src/lib/app-actions.ts` directly:
 
 ```typescript
-// React side - in useMainWindowEventListeners
-listen('menu-preferences', () => {
-  commandContext.openPreferences()
+await MenuItem.new({
+  id: 'preferences',
+  text: t('menu.preferences'),
+  accelerator: 'CmdOrCtrl+,',
+  action: handleOpenPreferences, // useUIStore.getState().setPreferencesOpen(true)
 })
 ```
 
@@ -199,17 +201,12 @@ export function initializeCommandSystem(): void {
 ### Step 4: Extend Context (if needed)
 
 ```typescript
-// src/hooks/use-command-context.ts
-export function useCommandContext(): CommandContext {
-  return useMemo(
-    () => ({
-      // ... existing actions
-      myNewAction: () => {
-        /* implementation */
-      },
-    }),
-    []
-  )
+// src/hooks/use-command-context.ts - a module-level singleton
+const commandContext: CommandContext = {
+  // ... existing actions
+  myNewAction: () => {
+    /* implementation */
+  },
 }
 
 // Update CommandContext type in types.ts
@@ -221,8 +218,9 @@ Organize commands into logical groups (used in command palette headings):
 
 - **navigation**: Sidebar toggles, view switching
 - **settings**: Preferences, configuration
-- **notifications**: Notification actions
 - **window**: Window management (minimize, close, etc.)
+- **app**: About, Check for Updates, Quit
+- **debug**: Test toast
 
 Group labels are translated via `commands.group.{groupName}` keys.
 

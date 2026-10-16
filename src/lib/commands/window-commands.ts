@@ -1,13 +1,22 @@
 import type { AppCommand } from './types'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import i18n from '@/i18n/config'
+import { getPlatform } from '@/hooks/use-platform'
+import { commands, unwrapResult } from '@/lib/tauri-bindings'
+
+const shortcuts: { close?: string; minimize?: string; fullscreen: string } = {
+  macos: { close: '⌘W', minimize: '⌘M', fullscreen: '⌃⌘F' },
+  windows: { close: 'Alt+F4', fullscreen: 'F11' },
+  linux: { fullscreen: 'F11' },
+}[getPlatform()]
 
 export const windowCommands: AppCommand[] = [
   {
     id: 'window-close',
     labelKey: 'commands.windowClose.label',
     descriptionKey: 'commands.windowClose.description',
-    shortcut: '⌘+W',
+    group: 'window',
+    shortcut: shortcuts.close,
 
     execute: async context => {
       try {
@@ -27,7 +36,8 @@ export const windowCommands: AppCommand[] = [
     id: 'window-minimize',
     labelKey: 'commands.windowMinimize.label',
     descriptionKey: 'commands.windowMinimize.description',
-    shortcut: '⌘+M',
+    group: 'window',
+    shortcut: shortcuts.minimize,
 
     execute: async context => {
       try {
@@ -47,11 +57,11 @@ export const windowCommands: AppCommand[] = [
     id: 'window-toggle-maximize',
     labelKey: 'commands.windowToggleMaximize.label',
     descriptionKey: 'commands.windowToggleMaximize.description',
+    group: 'window',
 
     execute: async context => {
       try {
-        const appWindow = getCurrentWindow()
-        await appWindow.toggleMaximize()
+        unwrapResult(await commands.toggleMainWindowMaximize())
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Unknown error'
         context.showToast(
@@ -66,12 +76,12 @@ export const windowCommands: AppCommand[] = [
     id: 'window-fullscreen',
     labelKey: 'commands.windowFullscreen.label',
     descriptionKey: 'commands.windowFullscreen.description',
-    shortcut: 'F11',
+    group: 'window',
+    shortcut: shortcuts.fullscreen,
 
     execute: async context => {
       try {
-        const appWindow = getCurrentWindow()
-        await appWindow.setFullscreen(true)
+        unwrapResult(await commands.setMainWindowFullscreen(true))
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Unknown error'
         context.showToast(
@@ -86,12 +96,12 @@ export const windowCommands: AppCommand[] = [
     id: 'window-exit-fullscreen',
     labelKey: 'commands.windowExitFullscreen.label',
     descriptionKey: 'commands.windowExitFullscreen.description',
-    shortcut: 'Escape',
+    group: 'window',
+    shortcut: shortcuts.fullscreen,
 
     execute: async context => {
       try {
-        const appWindow = getCurrentWindow()
-        await appWindow.setFullscreen(false)
+        unwrapResult(await commands.setMainWindowFullscreen(false))
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Unknown error'
         context.showToast(

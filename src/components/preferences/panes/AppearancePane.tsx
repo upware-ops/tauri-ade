@@ -69,9 +69,10 @@ export function AppearancePane() {
   const currentLanguageValue = preferences?.language ?? 'system'
 
   return (
-    <div className="space-y-6">
+    <div>
       <SettingsSection title={t('preferences.appearance.language')}>
         <SettingsField
+          htmlFor="preferences-language"
           label={t('preferences.appearance.language')}
           description={t('preferences.appearance.languageDescription')}
         >
@@ -80,7 +81,10 @@ export function AppearancePane() {
             onValueChange={handleLanguageChange}
             disabled={savePreferences.isPending}
           >
-            <SelectTrigger>
+            <SelectTrigger
+              id="preferences-language"
+              aria-describedby="preferences-language-description"
+            >
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -99,6 +103,7 @@ export function AppearancePane() {
 
       <SettingsSection title={t('preferences.appearance.theme')}>
         <SettingsField
+          htmlFor="preferences-theme"
           label={t('preferences.appearance.colorTheme')}
           description={t('preferences.appearance.colorThemeDescription')}
         >
@@ -107,7 +112,10 @@ export function AppearancePane() {
             onValueChange={handleThemeChange}
             disabled={savePreferences.isPending}
           >
-            <SelectTrigger>
+            <SelectTrigger
+              id="preferences-theme"
+              aria-describedby="preferences-theme-description"
+            >
               <SelectValue
                 placeholder={t('preferences.appearance.selectTheme')}
               />

@@ -101,7 +101,7 @@ const handleSave = async () => {
 ### 1. Define the Rust command
 
 ```rust
-// src-tauri/src/lib.rs
+// src-tauri/src/commands/my_feature.rs (export it from commands/mod.rs)
 
 #[tauri::command]
 #[specta::specta]  // Add this attribute
@@ -129,7 +129,7 @@ pub struct MyType {
 pub fn generate_bindings() -> Builder<tauri::Wry> {
     Builder::<tauri::Wry>::new().commands(collect_commands![
         // ... existing commands
-        crate::my_new_command,  // Add here
+        my_feature::my_new_command,  // Add here
     ])
 }
 ```
@@ -154,14 +154,14 @@ const result = await commands.myNewCommand('arg')
 
 Always commit:
 
-- Rust changes (`src-tauri/src/lib.rs`, `src-tauri/src/bindings.rs`)
+- Rust changes (`src-tauri/src/commands/<domain>.rs`, `src-tauri/src/bindings.rs`)
 - Generated TypeScript (`src/lib/bindings.ts`)
 
 ## File Structure
 
 ```
 src-tauri/src/
-├── lib.rs              # Commands with #[specta::specta]
+├── commands/           # Commands with #[specta::specta], one file per domain
 ├── bindings.rs         # Command registration + export test
 └── Cargo.toml          # specta, tauri-specta dependencies
 
@@ -221,15 +221,19 @@ vi.mock('@/lib/tauri-bindings', () => ({
 
 ## Available Commands
 
-| Command                   | Parameters                            | Returns                          | Description         |
-| ------------------------- | ------------------------------------- | -------------------------------- | ------------------- |
-| `greet`                   | `name: string`                        | `string`                         | Simple greeting     |
-| `loadPreferences`         | none                                  | `Result<AppPreferences, string>` | Load preferences    |
-| `savePreferences`         | `preferences: AppPreferences`         | `Result<null, string>`           | Save preferences    |
-| `sendNativeNotification`  | `title: string, body: string \| null` | `Result<null, string>`           | System notification |
-| `saveEmergencyData`       | `filename: string, data: JsonValue`   | `Result<null, string>`           | Save recovery data  |
-| `loadEmergencyData`       | `filename: string`                    | `Result<JsonValue, string>`      | Load recovery data  |
-| `cleanupOldRecoveryFiles` | none                                  | `Result<number, string>`         | Cleanup old files   |
+| Command                                                  | Parameters                            | Returns                            | Description                                   |
+| -------------------------------------------------------- | ------------------------------------- | ---------------------------------- | --------------------------------------------- |
+| `greet`                                                  | `name: string`                        | `Result<string, string>`           | Simple greeting                               |
+| `loadPreferences`                                        | none                                  | `Result<AppPreferences, string>`   | Load preferences                              |
+| `savePreferences`                                        | `preferences: AppPreferences`         | `Result<null, string>`             | Save preferences                              |
+| `sendNativeNotification`                                 | `title: string, body: string \| null` | `Result<null, string>`             | System notification                           |
+| `saveEmergencyData`                                      | `filename: string, data: JsonValue`   | `Result<null, RecoveryError>`      | Save recovery data                            |
+| `loadEmergencyData`                                      | `filename: string`                    | `Result<JsonValue, RecoveryError>` | Load recovery data                            |
+| `cleanupOldRecoveryFiles`                                | none                                  | `Result<number, RecoveryError>`    | Cleanup old files                             |
+| `showQuickPane` / `dismissQuickPane` / `toggleQuickPane` | none                                  | `Result<null, string>`             | Quick pane visibility                         |
+| `getDefaultQuickPaneShortcut`                            | none                                  | `string`                           | Default quick pane shortcut                   |
+| `updateQuickPaneShortcut`                                | `shortcut: string \| null`            | `Result<null, string>`             | Change the global shortcut (`null` = default) |
+| `setTrayLabels`                                          | `show: string, quit: string`          | `Result<null, string>`             | Translated tray menu labels                   |
 
 ## Dependencies
 

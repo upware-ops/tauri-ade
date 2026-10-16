@@ -75,7 +75,7 @@ const handleAction = () => {
 
 - **Rust → React**: `app.emit("event-name", data)` → `listen("event-name", handler)`
 - **React → Rust**: Use typed commands from `@/lib/tauri-bindings` (tauri-specta)
-- **Commands**: All actions flow through centralized command system
+- **Commands**: The command palette, the title bar's Settings button and the window controls dispatch through the command registry (`executeCommand`); menus and keyboard shortcuts call the same store actions and `src/lib/app-actions.ts` directly
 
 ### Tauri Command Pattern (tauri-specta)
 

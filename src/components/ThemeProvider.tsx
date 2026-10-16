@@ -29,9 +29,10 @@ export function ThemeProvider({
   useLayoutEffect(() => {
     if (preferences?.theme && !hasSyncedPreferences.current) {
       hasSyncedPreferences.current = true
+      localStorage.setItem(storageKey, preferences.theme)
       setTheme(preferences.theme as Theme)
     }
-  }, [preferences?.theme])
+  }, [preferences?.theme, storageKey])
 
   useEffect(() => {
     const root = window.document.documentElement

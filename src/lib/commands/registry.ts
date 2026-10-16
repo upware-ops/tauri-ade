@@ -23,7 +23,11 @@ export function getAllCommands(
       const description = cmd.descriptionKey
         ? t(cmd.descriptionKey).toLowerCase()
         : ''
-      return label.includes(search) || description.includes(search)
+      return (
+        label.includes(search) ||
+        description.includes(search) ||
+        cmd.keywords?.some(keyword => keyword.toLowerCase().includes(search))
+      )
     })
   }
 

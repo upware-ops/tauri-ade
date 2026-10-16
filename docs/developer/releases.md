@@ -97,8 +97,9 @@ All five files must have matching versions:
 - Checks for updates 5 seconds after app launch
 - Shows confirmation dialog when update is available
 - Downloads and installs in background
-- Offers to restart when complete
+- Offers to restart when complete (macOS/Linux). On Windows, the updater exits the app to run the installer, which reopens it
 - Fails silently on network issues
+- Installed v0.1.1 copies install the next release without asking, because their old `confirm()` flow is broken (see below)
 
 ### Update Flow
 
@@ -108,39 +109,15 @@ App Launch → (5s delay) → Check GitHub → Show Dialog → Download → Inst
 
 ### Implementation
 
-```typescript
-// src/App.tsx
-import { check } from '@tauri-apps/plugin-updater'
-import { relaunch } from '@tauri-apps/plugin-process'
+`checkForUpdates({ interactive })` in `src/lib/app-actions.ts` runs both the startup check and the manual check. It asks with `ask()` from `@tauri-apps/plugin-dialog` before installing and again before relaunching. An interactive check also shows "up to date" and failure toasts, and first shows the main window.
 
-useEffect(() => {
-  const checkForUpdates = async () => {
-    try {
-      const update = await check()
-      if (update) {
-        const shouldUpdate = confirm(`Update available: ${update.version}...`)
-        if (shouldUpdate) {
-          await update.downloadAndInstall()
-          if (confirm('Restart to apply update?')) {
-            await relaunch()
-          }
-        }
-      }
-    } catch {
-      // Silent fail - don't bother user with network issues
-    }
-  }
-
-  const timer = setTimeout(checkForUpdates, 5000)
-  return () => clearTimeout(timer)
-}, [])
-```
+Never use `window.confirm` for this; ESLint's `no-alert` rule bans it. On macOS, `confirm()` is a no-op that returns false. With `tauri-plugin-dialog` 2.7.2, it returns a rejected Promise, which is truthy, so the update installed without asking ([plugins-workspace#3664](https://github.com/tauri-apps/plugins-workspace/issues/3664)).
 
 ### Manual Update Check
 
 Users can manually check via:
 
-- **Menu**: App → Check for Updates
+- **Menu** (macOS): App → Check for Updates
 - **Command Palette**: Cmd+K → "Check for Updates"
 
 ## Release Artifacts

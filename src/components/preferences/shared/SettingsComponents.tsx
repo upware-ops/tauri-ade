@@ -1,8 +1,13 @@
 import type { ReactNode } from 'react'
-import { Label } from '@/components/ui/label'
-import { Separator } from '@/components/ui/separator'
+import {
+  Field,
+  FieldContent,
+  FieldDescription,
+  FieldLabel,
+} from '@/components/ui/field'
 
 interface SettingsFieldProps {
+  htmlFor: string
   label: string
   children: ReactNode
   description?: string
@@ -14,29 +19,31 @@ interface SettingsSectionProps {
 }
 
 export function SettingsField({
+  htmlFor,
   label,
   children,
   description,
 }: SettingsFieldProps) {
   return (
-    <div className="space-y-2">
-      <Label className="text-sm font-medium text-foreground">{label}</Label>
-      {children}
-      {description && (
-        <p className="text-sm text-muted-foreground">{description}</p>
-      )}
-    </div>
+    <Field className="settings-field">
+      <FieldContent className="settings-field-copy">
+        <FieldLabel htmlFor={htmlFor}>{label}</FieldLabel>
+        {description && (
+          <FieldDescription id={`${htmlFor}-description`}>
+            {description}
+          </FieldDescription>
+        )}
+      </FieldContent>
+      <div className="settings-field-control">{children}</div>
+    </Field>
   )
 }
 
 export function SettingsSection({ title, children }: SettingsSectionProps) {
   return (
-    <div className="space-y-4">
-      <div>
-        <h3 className="text-lg font-medium text-foreground">{title}</h3>
-        <Separator className="mt-2" />
-      </div>
-      <div className="space-y-4">{children}</div>
-    </div>
+    <section className="settings-section">
+      <h3>{title}</h3>
+      <div>{children}</div>
+    </section>
   )
 }

@@ -4,6 +4,13 @@ import { getCurrentWindow } from '@tauri-apps/api/window'
 import { useTranslation } from 'react-i18next'
 import { logger } from '@/lib/logger'
 import { cn } from '@/lib/utils'
+import { initializeLanguage } from '@/i18n/language-init'
+import { usePreferences } from '@/services/preferences'
+import {
+  NEURAL_MESH_LOOP_SECONDS,
+  ShaderSurface,
+} from '@/components/ui/shader-surface'
+import './splash.css'
 
 const NEXT_STATUS = {
   'splash.status.preferences': 'splash.status.language',
@@ -20,26 +27,78 @@ const SPLASH_FADE_MS = 300
 
 interface SplashScreenProps {
   done: boolean
+  onReady?: () => void
 }
 
-export function SplashScreen({ done }: SplashScreenProps) {
+export function SplashArtwork({
+  animated = true,
+  className,
+  onFirstLoopComplete,
+}: {
+  animated?: boolean
+  className?: string
+  onFirstLoopComplete?: () => void
+}) {
   const { t } = useTranslation()
-  const [status, setStatus] = useState<{
-    current: StatusKey
-    previous: StatusKey | null
-  }>({ current: FIRST_STATUS, previous: null })
+
+  return (
+    <div className={cn('ade-splash__artwork', className)}>
+      <div className="ade-splash__composition">
+        <ShaderSurface
+          animated={animated}
+          className="ade-splash__field"
+          onFirstLoopComplete={onFirstLoopComplete}
+        />
+        <div className="ade-splash__identity">
+          <h1>{t('app.name')}</h1>
+          <p>{t('splash.subtitle')}</p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export function SplashScreen({ done, onReady }: SplashScreenProps) {
+  const { t } = useTranslation()
+  const { data: preferences, isPending } = usePreferences()
+  const language = preferences?.language ?? null
+  const [status, setStatus] = useState<StatusKey>(FIRST_STATUS)
   const [version, setVersion] = useState('')
   const [hidden, setHidden] = useState(false)
+  const [minimumElapsed, setMinimumElapsed] = useState(false)
+  const [loopComplete, setLoopComplete] = useState(false)
 
-  // The window is created hidden (see tauri.conf.json) so the first frame the
-  // user sees is the splash, not an empty webview.
   useEffect(() => {
+    if (!isPending) void initializeLanguage(language)
+  }, [isPending, language])
+
+  // Tauri creates the window hidden so its first visible frame is the splash.
+  useEffect(() => {
+    let active = true
+    let timer: ReturnType<typeof setTimeout> | undefined
+
     getCurrentWindow()
       .show()
-      .catch(error => {
-        logger.error('Failed to show the main window', { error })
+      .then(() => {
+        if (!active) return
+        timer = setTimeout(
+          () => setMinimumElapsed(true),
+          NEURAL_MESH_LOOP_SECONDS * 1000
+        )
       })
+      .catch(error => {
+        logger.error('Failed to show the splash window', { error })
+      })
+
+    return () => {
+      active = false
+      clearTimeout(timer)
+    }
   }, [])
+
+  useEffect(() => {
+    if (minimumElapsed && loopComplete) onReady?.()
+  }, [minimumElapsed, loopComplete, onReady])
 
   useEffect(() => {
     getVersion()
@@ -53,10 +112,7 @@ export function SplashScreen({ done }: SplashScreenProps) {
     if (done) return
 
     const rotation = setInterval(() => {
-      setStatus(({ current }) => ({
-        current: NEXT_STATUS[current],
-        previous: current,
-      }))
+      setStatus(current => NEXT_STATUS[current])
     }, ROTATE_MS)
 
     return () => clearInterval(rotation)
@@ -72,50 +128,19 @@ export function SplashScreen({ done }: SplashScreenProps) {
   if (hidden) return null
 
   return (
-    <div
-      className={cn(
-        'fixed inset-0 z-50 flex select-none flex-col items-center justify-center rounded-[var(--app-corner-radius)] bg-background',
-        done &&
-          'pointer-events-none animate-out fade-out duration-300 fill-mode-forwards'
-      )}
-    >
-      <div className="relative" aria-hidden>
-        <div className="absolute inset-0 -z-10 rounded-full bg-brand/25 blur-3xl motion-safe:animate-splash-breathe" />
-        <img
-          src="/Icon.svg"
-          alt=""
-          className="size-24 ease-out motion-safe:animate-in motion-safe:fade-in motion-safe:zoom-in-95 motion-safe:duration-700"
-        />
-      </div>
-
-      <h1 className="text-lg font-medium tracking-tight">{t('app.name')}</h1>
-
-      <p
-        className="mt-2 grid place-items-center text-sm text-muted-foreground"
-        aria-hidden
-      >
-        <span
-          key={`enter-${status.current}`}
-          className="col-start-1 row-start-1 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-1 motion-safe:duration-500"
-        >
-          {t(status.current)}
-        </span>
-        {status.previous !== null && (
-          <span
-            key={`exit-${status.previous}`}
-            className="col-start-1 row-start-1 motion-reduce:hidden motion-safe:animate-out motion-safe:fade-out motion-safe:slide-out-to-top-1 motion-safe:duration-500 motion-safe:fill-mode-forwards"
-          >
-            {t(status.previous)}
-          </span>
-        )}
-      </p>
+    <div className="ade-splash" data-done={done}>
+      <SplashArtwork
+        className="h-dvh w-full"
+        onFirstLoopComplete={() => setLoopComplete(true)}
+      />
 
       <span role="status" aria-live="polite" className="sr-only">
         {t('splash.loading', { appName: t('app.name') })}
+        <span>{t(status)}</span>
       </span>
 
       {version && (
-        <p className="absolute bottom-3 right-3 text-xs text-muted-foreground/70">
+        <p className="ade-splash__version">
           {t('splash.version', { version })}
         </p>
       )}

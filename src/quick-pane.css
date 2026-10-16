@@ -1,5 +1,7 @@
 @import 'tailwindcss';
 @import './theme-variables.css';
+@import './fonts.css';
+@import './components/ui/library.css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -20,9 +22,14 @@ body,
 }
 
 body {
-  font-family: -apple-system, 'Segoe UI', 'Roboto', sans-serif;
+  font-family: var(--font-ui);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.quick-pane-surface {
+  background-image: var(--grain-main);
+  background-size: 776px 776px;
 }
 
 /* Allow text input */

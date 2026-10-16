@@ -199,11 +199,15 @@ Use CSS logical properties instead of physical properties for automatic RTL supp
 
 ## Native Menus
 
-Native menus are built from JavaScript to use the same i18n system as React components.
+Native menus are built from JavaScript to use the same i18n system as React components. Only macOS has a native menu bar.
 
 ### Menu Builder Location
 
-See `/src/lib/menu.ts` for the menu builder implementation.
+See `/src/lib/menu.ts` for the menu builder implementation. Its `syncTrayLabels()` also sends the translated tray labels to Rust (`commands.setTrayLabels`) at startup and on every language change, on all platforms.
+
+### Quick Pane
+
+The quick pane is a separate window with its own i18n instance. The main window's `languageChanged` handler (`src/i18n/config.ts`) writes the active language to `localStorage['ui-language']`, and `QuickPaneApp` applies it on mount and on focus.
 
 ### Adding Menu Items
 

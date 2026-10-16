@@ -81,46 +81,17 @@ test('loads preferences', async () => {
 
 ### Test Wrapper for Providers
 
-Components using TanStack Query need a provider wrapper:
+`src/test/test-utils.tsx` exports a `render` that wraps components in a QueryClient (retries off), the i18n provider and a mock theme provider:
 
 ```typescript
-// src/test/utils.ts
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { ReactNode } from 'react'
-
-export function createTestQueryClient() {
-  return new QueryClient({
-    defaultOptions: {
-      queries: { retry: false },
-      mutations: { retry: false },
-    },
-  })
-}
-
-export function TestProviders({ children }: { children: ReactNode }) {
-  const queryClient = createTestQueryClient()
-  return (
-    <QueryClientProvider client={queryClient}>
-      {children}
-    </QueryClientProvider>
-  )
-}
-```
-
-Usage:
-
-```typescript
-import { render } from '@testing-library/react'
-import { TestProviders } from '@/test/utils'
+import { render, screen } from '@/test/test-utils'
 
 test('component with query', () => {
-  render(
-    <TestProviders>
-      <MyComponent />
-    </TestProviders>
-  )
+  render(<MyComponent />)
 })
 ```
+
+On Node 25+, `vitest.config.ts` passes `--no-experimental-webstorage`. Node's global `localStorage` would otherwise hide jsdom's.
 
 ### Testing Zustand Stores
 

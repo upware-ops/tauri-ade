@@ -1,5 +1,7 @@
 import { cn } from '@/lib/utils'
+import { ComponentLibrary } from '@/components/component-library/ComponentLibrary'
 import { useUIStore } from '@/store/ui-store'
+import { HomeScreen } from './HomeScreen'
 
 interface MainWindowContentProps {
   children?: React.ReactNode
@@ -10,19 +12,17 @@ export function MainWindowContent({
   children,
   className,
 }: MainWindowContentProps) {
-  const lastQuickPaneEntry = useUIStore(state => state.lastQuickPaneEntry)
+  const activeView = useUIStore(state => state.activeView)
 
   return (
-    <div className={cn('flex h-full flex-col bg-background', className)}>
-      {children || (
-        <div className="flex flex-1 flex-col items-center justify-center">
-          <h1 className="text-4xl font-bold text-foreground">
-            {lastQuickPaneEntry
-              ? `Last entry: ${lastQuickPaneEntry}`
-              : 'Hello World'}
-          </h1>
-        </div>
+    <div
+      className={cn(
+        'flex h-full min-h-0 min-w-0 flex-col overflow-y-auto overscroll-contain bg-background',
+        className
       )}
+    >
+      {children ||
+        (activeView === 'library' ? <ComponentLibrary /> : <HomeScreen />)}
     </div>
   )
 }

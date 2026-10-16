@@ -73,7 +73,10 @@ fn init_quick_pane_macos(app: &AppHandle) -> Result<(), String> {
     let panel = PanelBuilder::<_, QuickPanePanel>::new(app, QUICK_PANE_LABEL)
         .url(WebviewUrl::App("quick-pane.html".into()))
         .title("Quick Entry")
-        .size(Size::Logical(LogicalSize::new(500.0, 72.0)))
+        .size(Size::Logical(LogicalSize::new(
+            QUICK_PANE_WIDTH,
+            QUICK_PANE_HEIGHT,
+        )))
         .level(PanelLevel::Status) // Status level to appear above fullscreen apps
         .transparent(true)
         .has_shadow(true)
@@ -114,7 +117,7 @@ fn init_quick_pane_standard(app: &AppHandle) -> Result<(), String> {
         WebviewUrl::App("quick-pane.html".into()),
     )
     .title("Quick Entry")
-    .inner_size(500.0, 72.0)
+    .inner_size(QUICK_PANE_WIDTH, QUICK_PANE_HEIGHT)
     .always_on_top(true)
     .skip_taskbar(true)
     .decorations(false)
@@ -319,7 +322,8 @@ pub fn toggle_quick_pane(app: AppHandle) -> Result<(), String> {
 // Shortcut Management
 // ============================================================================
 
-/// Registers the quick pane global shortcut, unregistering any previously registered one.
+/// Registers the quick pane global shortcut, then unregisters the previously registered one.
+/// If registration fails, the old shortcut stays registered and stored.
 /// This helper is used by both setup() and update_quick_pane_shortcut() for consistency.
 #[cfg(desktop)]
 pub fn register_quick_pane_shortcut(app: &AppHandle, shortcut: &str) -> Result<(), String> {
@@ -331,6 +335,28 @@ pub fn register_quick_pane_shortcut(app: &AppHandle, shortcut: &str) -> Result<(
     let mut current_shortcut = CURRENT_QUICK_PANE_SHORTCUT
         .lock()
         .map_err(|e| format!("Failed to lock shortcut mutex: {e}"))?;
+
+    if current_shortcut
+        .as_deref()
+        .is_some_and(|current| is_same_shortcut(current, shortcut))
+    {
+        log::debug!("Quick pane shortcut already registered: {shortcut}");
+        return Ok(());
+    }
+
+    // Register the new shortcut
+    let app_handle = app.clone();
+    global_shortcut
+        .on_shortcut(shortcut, move |_app, _shortcut, event| {
+            use tauri_plugin_global_shortcut::ShortcutState;
+            if event.state == ShortcutState::Pressed {
+                log::info!("Quick pane shortcut triggered");
+                if let Err(e) = toggle_quick_pane(app_handle.clone()) {
+                    log::error!("Failed to toggle quick pane: {e}");
+                }
+            }
+        })
+        .map_err(|e| format!("Failed to register shortcut '{shortcut}': {e}"))?;
 
     // Unregister the old shortcut if one exists
     if let Some(old_shortcut_str) = current_shortcut.take() {
@@ -350,25 +376,19 @@ pub fn register_quick_pane_shortcut(app: &AppHandle, shortcut: &str) -> Result<(
         }
     }
 
-    // Register the new shortcut
-    let app_handle = app.clone();
-    global_shortcut
-        .on_shortcut(shortcut, move |_app, _shortcut, event| {
-            use tauri_plugin_global_shortcut::ShortcutState;
-            if event.state == ShortcutState::Pressed {
-                log::info!("Quick pane shortcut triggered");
-                if let Err(e) = toggle_quick_pane(app_handle.clone()) {
-                    log::error!("Failed to toggle quick pane: {e}");
-                }
-            }
-        })
-        .map_err(|e| format!("Failed to register shortcut '{shortcut}': {e}"))?;
-
     // Store the new shortcut for future unregistration
     *current_shortcut = Some(shortcut.to_string());
     log::debug!("Registered quick pane shortcut: {shortcut}");
 
     Ok(())
+}
+
+/// Returns whether both strings parse to the same shortcut (e.g. `Period` and `.`).
+#[cfg(desktop)]
+fn is_same_shortcut(a: &str, b: &str) -> bool {
+    use tauri_plugin_global_shortcut::Shortcut;
+
+    matches!((a.parse::<Shortcut>(), b.parse::<Shortcut>()), (Ok(a), Ok(b)) if a == b)
 }
 
 /// Returns the default shortcut constant for frontend use.
@@ -400,4 +420,21 @@ pub fn update_quick_pane_shortcut(app: AppHandle, shortcut: Option<String>) -> R
     }
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_period_name_and_symbol_are_the_same_shortcut() {
+        assert!(is_same_shortcut(
+            "CommandOrControl+Shift+.",
+            "CommandOrControl+Shift+Period"
+        ));
+        assert!(!is_same_shortcut(
+            "CommandOrControl+Shift+.",
+            "CommandOrControl+Shift+Comma"
+        ));
+    }
 }
