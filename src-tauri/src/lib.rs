@@ -51,39 +51,77 @@ fn fit_main_window(window: &tauri::WebviewWindow, fit_position: bool) -> tauri::
             None => return Ok(()),
         },
     };
-    let work_area = monitor.work_area();
     if window.is_maximized()? {
-        if fit_position && !window.is_decorated()? && window.outer_position()? != work_area.position
+        #[cfg(target_os = "macos")]
         {
-            window_state::set_position(window, work_area.position, monitor.scale_factor())?;
+            let work_area = monitor.work_area();
+            if fit_position
+                && !window.is_decorated()?
+                && window.outer_position()? != work_area.position
+            {
+                window_state::set_position(window, work_area.position, monitor.scale_factor())?;
+            }
         }
         return Ok(());
     }
-    let inner_size = window.inner_size()?;
+
+    fit_main_window_on_monitor(
+        window,
+        &monitor,
+        window.inner_size()?,
+        window.scale_factor()?,
+        fit_position,
+    )
+    .map(|_| ())
+}
+
+#[cfg(desktop)]
+fn fit_main_window_on_monitor(
+    window: &tauri::WebviewWindow,
+    monitor: &tauri::Monitor,
+    inner_size: tauri::PhysicalSize<u32>,
+    scale_factor: f64,
+    fit_position: bool,
+) -> tauri::Result<tauri::PhysicalSize<u32>> {
+    let work_area = monitor.work_area();
+    let current_size = window.inner_size()?;
     let outer_size = window.outer_size()?;
-    let frame_width = outer_size.width.saturating_sub(inner_size.width);
-    let frame_height = outer_size.height.saturating_sub(inner_size.height);
+    let frame_width = outer_size.width.saturating_sub(current_size.width);
+    let frame_height = outer_size.height.saturating_sub(current_size.height);
     let max_width = work_area.size.width.saturating_sub(frame_width).max(1);
     let max_height = work_area.size.height.saturating_sub(frame_height).max(1);
-    let scale_factor = window.scale_factor()?;
     let min_width = ((1280.0 * scale_factor).round() as u32).clamp(1, max_width);
     let min_height = ((800.0 * scale_factor).round() as u32).clamp(1, max_height);
 
+    #[cfg(target_os = "linux")]
+    let constraint = |value| tauri::LogicalUnit::new(f64::from(value) / scale_factor).into();
+    #[cfg(not(target_os = "linux"))]
+    let constraint = |value| tauri::PhysicalUnit::new(value as i32).into();
     window.set_size_constraints(tauri::WindowSizeConstraints {
-        min_width: Some(tauri::PhysicalUnit::new(min_width as i32).into()),
-        min_height: Some(tauri::PhysicalUnit::new(min_height as i32).into()),
-        max_width: Some(tauri::PhysicalUnit::new(max_width as i32).into()),
-        max_height: Some(tauri::PhysicalUnit::new(max_height as i32).into()),
+        min_width: Some(constraint(min_width)),
+        min_height: Some(constraint(min_height)),
+        max_width: Some(constraint(max_width)),
+        max_height: Some(constraint(max_height)),
     })?;
 
     let width = inner_size.width.clamp(min_width, max_width);
     let height = inner_size.height.clamp(min_height, max_height);
-    if width != inner_size.width || height != inner_size.height {
+    if width != current_size.width
+        || height != current_size.height
+        || window.scale_factor()? != scale_factor
+    {
+        #[cfg(target_os = "linux")]
+        window.set_size(tauri::PhysicalSize::new(width, height).to_logical::<f64>(scale_factor))?;
+        #[cfg(not(target_os = "linux"))]
         window_state::set_size(window, tauri::PhysicalSize::new(width, height))?;
     }
 
+    let outer_size = tauri::PhysicalSize::new(
+        width.saturating_add(frame_width),
+        height.saturating_add(frame_height),
+    );
     if !fit_position {
-        return Ok(());
+        return Ok(outer_size);
     }
 
     let position = window.outer_position()?;
@@ -101,7 +139,7 @@ fn fit_main_window(window: &tauri::WebviewWindow, fit_position: bool) -> tauri::
         )?;
     }
 
-    Ok(())
+    Ok(outer_size)
 }
 
 /// Shows, unminimizes, restores the saved state of and focuses the main window.
@@ -146,8 +184,10 @@ fn restore_main_window(app: &AppHandle, restore_saved: bool) {
 
     let was_hidden = !window.is_visible().unwrap_or(true);
 
-    if let Err(e) = fit_main_window(&window, true) {
-        log::warn!("Failed to fit main window to the monitor work area: {e}");
+    if restore_saved {
+        if let Err(e) = fit_main_window(&window, true) {
+            log::warn!("Failed to fit main window to the monitor work area: {e}");
+        }
     }
     if was_hidden
         && restore_saved
@@ -297,9 +337,6 @@ pub fn run() {
                 let window =
                     tauri::WebviewWindowBuilder::from_config(app, &main_config)?.build()?;
                 window_state::initialize(&window)?;
-                if let Err(e) = fit_main_window(&window, true) {
-                    log::warn!("Failed to fit main window to the monitor work area: {e}");
-                }
 
                 let mut splash_config = main_config;
                 splash_config.label = "splash".into();
@@ -439,9 +476,13 @@ pub fn run() {
                     .then(|| app_handle.get_webview_window("main"))
                     .flatten()
                 {
-                    // Cocoa applies restored bounds asynchronously; fit after its native events.
-                    if let Err(e) = fit_main_window(&window, fit) {
-                        log::warn!("Failed to fit main window to the monitor work area: {e}");
+                    if commands::startup::is_complete(app_handle)
+                        && window.is_visible().unwrap_or(false)
+                    {
+                        // Native setters can queue placement until the window is shown.
+                        if let Err(e) = fit_main_window(&window, fit) {
+                            log::warn!("Failed to fit main window to the monitor work area: {e}");
+                        }
                     }
                     if let Err(error) = window_state::schedule_capture(&window) {
                         log::warn!("Failed to capture main window state: {error}");

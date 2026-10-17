@@ -221,7 +221,11 @@ pub(crate) fn set_position(
             .setFrameTopLeftPoint(NSPoint::new(position.x, primary_height - position.y));
         Ok(())
     }
-    #[cfg(not(target_os = "macos"))]
+    #[cfg(target_os = "linux")]
+    {
+        window.set_position(position.to_logical::<f64>(scale_factor))
+    }
+    #[cfg(not(any(target_os = "macos", target_os = "linux")))]
     {
         let _ = scale_factor;
         window.set_position(position)
@@ -253,10 +257,15 @@ fn maximized_monitor(
     saved_scale: Option<f64>,
 ) -> tauri::Result<Option<tauri::Monitor>> {
     let monitors = window.available_monitors()?;
+    #[cfg(target_os = "linux")]
+    let scale = match saved_scale {
+        Some(scale) => scale,
+        None => window.scale_factor()?,
+    };
     let monitor = position.and_then(|position| {
-        monitors.into_iter().find(|monitor| {
-            #[cfg(target_os = "macos")]
-            {
+        #[cfg(target_os = "macos")]
+        {
+            monitors.into_iter().find(|monitor| {
                 let scale = saved_scale.unwrap_or(monitor.scale_factor());
                 let position =
                     PhysicalPosition::new(position.x, position.y).to_logical::<f64>(scale);
@@ -266,33 +275,111 @@ fn maximized_monitor(
                     && position.y >= origin.y
                     && position.x < origin.x + size.width
                     && position.y < origin.y + size.height
-            }
-            #[cfg(not(target_os = "macos"))]
-            {
-                let _ = saved_scale;
-                let origin = monitor.position();
-                let size = monitor.size();
-                position.x >= origin.x
-                    && position.y >= origin.y
-                    && i64::from(position.x) < i64::from(origin.x) + i64::from(size.width)
-                    && i64::from(position.y) < i64::from(origin.y) + i64::from(size.height)
-            }
-        })
+            })
+        }
+        #[cfg(target_os = "linux")]
+        {
+            let position = PhysicalPosition::new(position.x, position.y).to_logical::<f64>(scale);
+            monitors
+                .into_iter()
+                .map(|monitor| {
+                    let origin = monitor
+                        .work_area()
+                        .position
+                        .to_logical::<f64>(monitor.scale_factor());
+                    let distance = (position.x - origin.x).abs() + (position.y - origin.y).abs();
+                    (distance, monitor)
+                })
+                .min_by(|(left, _), (right, _)| left.total_cmp(right))
+                .map(|(_, monitor)| monitor)
+        }
+        #[cfg(not(any(target_os = "macos", target_os = "linux")))]
+        {
+            let _ = saved_scale;
+            monitors.into_iter().min_by_key(|monitor| {
+                let origin = monitor.work_area().position;
+                (i64::from(position.x) - i64::from(origin.x)).abs()
+                    + (i64::from(position.y) - i64::from(origin.y)).abs()
+            })
+        }
     });
     Ok(monitor.or(window.primary_monitor()?))
 }
 
 fn restore_saved_geometry(window: &WebviewWindow, saved: &SavedState) -> Result<Position, String> {
+    let monitor = if saved.maximized {
+        maximized_monitor(
+            window,
+            saved.maximized_position,
+            saved.maximized_scale_factor,
+        )
+        .map_err(|error| error.to_string())?
+    } else {
+        None
+    };
+    #[cfg(not(target_os = "macos"))]
+    if saved.maximized && !saved.fullscreen {
+        let normal_position = saved.restore_position.unwrap_or(
+            window
+                .outer_position()
+                .map_err(|error| error.to_string())?
+                .into(),
+        );
+        let size = PhysicalSize::new(saved.width, saved.height);
+        if let Some(monitor) = monitor {
+            let outer_size = crate::fit_main_window_on_monitor(
+                window,
+                &monitor,
+                size,
+                monitor.scale_factor(),
+                false,
+            )
+            .map_err(|error| error.to_string())?;
+            #[cfg(target_os = "linux")]
+            let scale = monitor.scale_factor();
+            #[cfg(not(target_os = "linux"))]
+            let scale = 1.0;
+            let monitor_origin = monitor.position().to_logical::<f64>(scale);
+            let left = f64::from(normal_position.x) / scale;
+            let top = f64::from(normal_position.y) / scale;
+            let right = left + f64::from(outer_size.width) / scale;
+            let bottom = top + f64::from(outer_size.height) / scale;
+            let same_monitor = window
+                .available_monitors()
+                .map_err(|error| error.to_string())?
+                .into_iter()
+                .map(|candidate| {
+                    #[cfg(target_os = "linux")]
+                    let scale = candidate.scale_factor();
+                    #[cfg(not(target_os = "linux"))]
+                    let scale = 1.0;
+                    let origin = candidate.position().to_logical::<f64>(scale);
+                    let size = candidate.size().to_logical::<f64>(scale);
+                    let width = (right.min(origin.x + size.width) - left.max(origin.x)).max(0.0);
+                    let height = (bottom.min(origin.y + size.height) - top.max(origin.y)).max(0.0);
+                    (width * height, origin == monitor_origin)
+                })
+                .max_by(|(left, _), (right, _)| left.total_cmp(right))
+                .is_some_and(|(area, same)| area > 0.0 && same);
+            let position = if same_monitor {
+                PhysicalPosition::new(normal_position.x, normal_position.y)
+            } else {
+                monitor.work_area().position
+            };
+            set_position(window, position, monitor.scale_factor())
+                .map_err(|error| error.to_string())?;
+        } else {
+            set_size(window, size).map_err(|error| error.to_string())?;
+        }
+        window.maximize().map_err(|error| error.to_string())?;
+        return Ok(normal_position);
+    }
     if saved.maximized {
         if let Some(position) = saved.restore_position {
-            let scale = maximized_monitor(
-                window,
-                saved.maximized_position,
-                saved.maximized_scale_factor,
-            )
-            .map_err(|error| error.to_string())?
-            .map(|monitor| monitor.scale_factor())
-            .unwrap_or(window.scale_factor().map_err(|error| error.to_string())?);
+            let scale = monitor
+                .as_ref()
+                .map(|monitor| monitor.scale_factor())
+                .unwrap_or(window.scale_factor().map_err(|error| error.to_string())?);
             set_position(window, PhysicalPosition::new(position.x, position.y), scale)
                 .map_err(|error| error.to_string())?;
         }
@@ -409,8 +496,14 @@ pub(crate) fn capture(window: &WebviewWindow) -> Result<(), String> {
 
     tracked.update(size, position, maximized, fullscreen);
     if maximized && !fullscreen {
+        let monitor = window
+            .current_monitor()
+            .map_err(|error| error.to_string())?;
+        tracked.saved.maximized_position = monitor
+            .as_ref()
+            .map(|monitor| monitor.work_area().position.into());
         tracked.saved.maximized_scale_factor =
-            Some(window.scale_factor().map_err(|error| error.to_string())?);
+            monitor.as_ref().map(|monitor| monitor.scale_factor());
     }
 
     Ok(())

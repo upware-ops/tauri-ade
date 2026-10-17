@@ -129,20 +129,24 @@ function App() {
       mode: import.meta.env.MODE,
     })
 
-    // Check for updates 5 seconds after app loads
-    const updateTimer = setTimeout(
-      () => void checkForUpdates({ interactive: false }),
-      5000
-    )
     return () => {
       active = false
       unlisten?.()
       document.removeEventListener('visibilitychange', revealIfShown)
       cancelAnimationFrame(revealFrame)
       cancelAnimationFrame(paintFrame)
-      clearTimeout(updateTimer)
     }
   }, [])
+
+  useEffect(() => {
+    if (!startupVisible) return
+
+    const updateTimer = setTimeout(
+      () => void checkForUpdates({ interactive: false }),
+      5000
+    )
+    return () => clearTimeout(updateTimer)
+  }, [startupVisible])
 
   return (
     <StartupReveal visible={startupVisible}>

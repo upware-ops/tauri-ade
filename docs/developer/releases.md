@@ -94,7 +94,7 @@ All five files must have matching versions:
 
 ### Behavior
 
-- Checks for updates 5 seconds after app launch
+- Checks for updates 5 seconds after the startup handoff reveals the main window
 - Shows confirmation dialog when update is available
 - Downloads and installs in background
 - Offers to restart when complete (macOS/Linux). On Windows, the updater exits the app to run the installer, which reopens it
@@ -104,12 +104,14 @@ All five files must have matching versions:
 ### Update Flow
 
 ```
-App Launch → (5s delay) → Check GitHub → Show Dialog → Download → Install → Restart
+Main Window Revealed → (5s delay) → Check GitHub → Show Dialog → Download → Install → Restart
 ```
 
 ### Implementation
 
 `checkForUpdates({ interactive })` in `src/lib/app-actions.ts` runs both the startup check and the manual check. It asks with `ask()` from `@tauri-apps/plugin-dialog` before installing and again before relaunching. An interactive check also shows "up to date" and failure toasts, and first shows the main window.
+
+Concurrent requests share one update flow through installation and restart. A manual request joining an automatic check enables interactive feedback for that flow.
 
 Never use `window.confirm` for this; ESLint's `no-alert` rule bans it. On macOS, `confirm()` is a no-op that returns false. With `tauri-plugin-dialog` 2.7.2, it returns a rejected Promise, which is truthy, so the update installed without asking ([plugins-workspace#3664](https://github.com/tauri-apps/plugins-workspace/issues/3664)).
 

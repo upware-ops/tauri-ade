@@ -77,7 +77,6 @@ function InputOTP({
         autoComplete="one-time-code"
         pattern="[0-9]*"
         value={code}
-        maxLength={maxLength}
         disabled={disabled}
         className="pointer-events-none absolute inset-0 size-full opacity-0"
         onChange={event => {
