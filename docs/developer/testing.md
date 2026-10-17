@@ -93,6 +93,10 @@ test('component with query', () => {
 
 On Node 25+, `vitest.config.ts` passes `--no-experimental-webstorage`. Node's global `localStorage` would otherwise hide jsdom's.
 
+### App Startup
+
+The App tests simulate the native startup handshake: the `completeStartup` mock delivers `startup-reveal` to the registered listener, and `acknowledgeStartupPaint` resolves successfully. Wrap the App in `MotionConfig skipAnimations` and await accessible roles so the real startup wrapper removes `inert` and `aria-hidden` before assertions.
+
 ### Testing Zustand Stores
 
 ```typescript
@@ -113,6 +117,8 @@ test('toggles sidebar visibility', () => {
 ```
 
 ## Rust Testing
+
+On Windows MSVC, `build.rs` embeds `windows-app-manifest.xml` with linker arguments that also reach unit-test executables. The Common Controls v6 dependency avoids Tauri's [`STATUS_ENTRYPOINT_NOT_FOUND` test failure](https://github.com/tauri-apps/tauri/issues/13419#issuecomment-3398457618); Tauri's default manifest embedding is disabled for this target to avoid duplication.
 
 ### Unit Tests
 

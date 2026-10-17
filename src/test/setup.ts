@@ -54,6 +54,10 @@ vi.mock('@/lib/tauri-bindings', () => ({
       .fn()
       .mockResolvedValue({ status: 'ok', data: 0 }),
     setTrayLabels: vi.fn().mockResolvedValue({ status: 'ok', data: null }),
+    completeStartup: vi.fn().mockResolvedValue({ status: 'ok', data: null }),
+    acknowledgeStartupPaint: vi
+      .fn()
+      .mockResolvedValue({ status: 'ok', data: null }),
   },
   unwrapResult: vi.fn((result: { status: string; data?: unknown }) => {
     if (result.status === 'ok') return result.data
