@@ -102,7 +102,7 @@ describe('Simplified Command System', () => {
     it('filters commands by keyword', () => {
       const searchResults = getAllCommands(mockContext, 'settings', mockT)
 
-      expect(searchResults.map(cmd => cmd.id)).toContain('open-preferences')
+      expect(searchResults.map(cmd => cmd.id)).toEqual(['open-preferences'])
     })
   })
 

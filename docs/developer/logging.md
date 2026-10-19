@@ -29,31 +29,33 @@ logger.error('Request failed', { error: response.error })
 ### Rust Backend
 
 - Uses `tauri-plugin-log` with standard Rust `log` crate
-- **Development**: Debug level, logs to stdout + webview console
-- **Production**: Info level, logs to stdout + app log directory
+- **Development**: Debug level
+- **Production**: Info level
+- Both modes log to stdout and the app log directory; non-Linux builds also configure the Webview target
 - Configuration in `src-tauri/src/lib.rs`
 
 ### TypeScript Frontend
 
 - **Development**: All logs go to browser console
 - **Production**: `warn` and `error` are forwarded to the Rust log through `@tauri-apps/plugin-log`, which needs `log:default` in the window's capability; other levels are dropped
+- Pass raw errors in context, for example `logger.error('Action failed', { error })`. Production serialization preserves each `Error`'s stack, falling back to `String(error)` when no stack is available
 - Logger utility at `src/lib/logger.ts`
 
 ## Log Levels
 
-| Level   | When to Use            | Dev | Prod |
-| ------- | ---------------------- | --- | ---- |
-| `trace` | Most verbose debugging | ✅  | ❌   |
-| `debug` | Development debugging  | ✅  | ❌   |
-| `info`  | General information    | ✅  | ✅   |
-| `warn`  | Warning conditions     | ✅  | ✅   |
-| `error` | Error conditions       | ✅  | ✅   |
+| Level   | When to Use            | Rust dev | Rust prod | TypeScript dev | TypeScript prod |
+| ------- | ---------------------- | -------- | --------- | -------------- | --------------- |
+| `trace` | Most verbose debugging | ❌       | ❌        | ✅             | ❌              |
+| `debug` | Development debugging  | ✅       | ❌        | ✅             | ❌              |
+| `info`  | General information    | ✅       | ✅        | ✅             | ❌              |
+| `warn`  | Warning conditions     | ✅       | ✅        | ✅             | ✅              |
+| `error` | Error conditions       | ✅       | ✅        | ✅             | ✅              |
 
 ## Where Logs Appear
 
 ### Development
 
-- **Rust**: Terminal (stdout) + Browser DevTools console (webview)
+- **Rust**: Terminal (stdout) + log file in app log directory
 - **TypeScript**: Browser DevTools console
 
 ### Production

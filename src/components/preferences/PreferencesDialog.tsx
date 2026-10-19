@@ -32,9 +32,11 @@ const navigationItems = [
   },
 ] as const
 
+type PreferencesPane = (typeof navigationItems)[number]['id']
+
 export function PreferencesDialog() {
   const { t } = useTranslation()
-  const [activePane, setActivePane] = useState('general')
+  const [activePane, setActivePane] = useState<PreferencesPane>('general')
   const preferencesOpen = useUIStore(state => state.preferencesOpen)
   const setPreferencesOpen = useUIStore(state => state.setPreferencesOpen)
 
@@ -48,7 +50,10 @@ export function PreferencesDialog() {
 
         <Tabs
           value={activePane}
-          onValueChange={setActivePane}
+          onValueChange={value => {
+            const pane = navigationItems.find(item => item.id === value)
+            if (pane) setActivePane(pane.id)
+          }}
           className="preferences-tabs"
         >
           <TabsList

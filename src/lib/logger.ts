@@ -16,7 +16,7 @@ interface LogEntry {
 }
 
 const errorsAsStrings = (_key: string, value: unknown) =>
-  value instanceof Error ? String(value) : value
+  value instanceof Error ? (value.stack ?? String(value)) : value
 
 class Logger {
   private isDevelopment = import.meta.env.DEV

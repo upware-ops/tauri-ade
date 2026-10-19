@@ -21,7 +21,7 @@ export interface TagInputProps extends Omit<
   disabled?: boolean
   inputProps?: Omit<
     React.ComponentProps<'input'>,
-    'value' | 'onChange' | 'disabled' | 'placeholder'
+    'value' | 'onChange' | 'disabled' | 'placeholder' | 'type' | 'ref'
   >
   removeTagLabel?: (text: string) => string
 }

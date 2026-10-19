@@ -111,10 +111,12 @@ const commandContext: CommandContext = {
 
 ## Available Commands
 
-- **Navigation** (`navigation-commands.ts`): `show-left-sidebar` and `hide-left-sidebar`, `show-right-sidebar` and `hide-right-sidebar` (only when applicable), `open-preferences`
+- **Navigation** (`navigation-commands.ts`): `open-home`, `open-library`, `show-left-sidebar` and `hide-left-sidebar`, `show-right-sidebar` and `hide-right-sidebar` (only when applicable), `open-preferences`
 - **Window** (`window-commands.ts`): `window-close`, `window-minimize`, `window-toggle-maximize`, `window-fullscreen`, `window-exit-fullscreen`
 - **App** (`app-commands.ts`): `app-about`, `app-check-updates`, `app-quit`
 - **Debug** (`notification-commands.ts`): `notification.test-toast`
+
+These categories identify source modules. Palette grouping is separate: `open-home` uses the `navigation` group; `open-library` and `open-preferences` use `settings`.
 
 ## Command Structure (Simplified)
 

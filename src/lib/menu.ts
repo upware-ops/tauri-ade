@@ -16,6 +16,7 @@ import { getPlatform } from '@/hooks/use-platform'
 import { useUIStore } from '@/store/ui-store'
 import { checkForUpdates, showAbout, toggleFullscreen } from '@/lib/app-actions'
 import { logger } from '@/lib/logger'
+import { notifications } from '@/lib/notifications'
 import { commands, unwrapResult } from '@/lib/tauri-bindings'
 
 /**
@@ -128,7 +129,10 @@ export async function buildAppMenu(): Promise<void> {
           text: t('menu.minimize'),
           accelerator: 'CmdOrCtrl+M',
           action: () =>
-            void whenMainWindowFocused(() => getCurrentWindow().minimize()),
+            void whenMainWindowFocused(
+              () => getCurrentWindow().minimize(),
+              'toast.error.windowMinimizeFailed'
+            ),
         }),
         await MenuItem.new({
           id: 'zoom',
@@ -136,7 +140,7 @@ export async function buildAppMenu(): Promise<void> {
           action: () =>
             void whenMainWindowFocused(async () => {
               unwrapResult(await commands.toggleMainWindowMaximize())
-            }),
+            }, 'toast.error.windowMaximizeFailed'),
         }),
         await PredefinedMenuItem.new({ item: 'Separator' }),
         await MenuItem.new({
@@ -151,7 +155,10 @@ export async function buildAppMenu(): Promise<void> {
           text: t('menu.closeWindow'),
           accelerator: 'CmdOrCtrl+W',
           action: () =>
-            void whenMainWindowFocused(() => getCurrentWindow().close()),
+            void whenMainWindowFocused(
+              () => getCurrentWindow().close(),
+              'toast.error.windowCloseFailed'
+            ),
         }),
       ],
     })
@@ -211,10 +218,20 @@ export async function syncTrayLabels(): Promise<void> {
 
 // Unlike AppKit's predefined items, custom items don't follow the key window
 async function whenMainWindowFocused(
-  action: () => Promise<void>
+  action: () => Promise<void>,
+  errorKey = 'toast.error.generic'
 ): Promise<void> {
-  if (await getCurrentWindow().isFocused()) {
-    await action()
+  try {
+    if (await getCurrentWindow().isFocused()) {
+      await action()
+    }
+  } catch (error) {
+    logger.error('Window menu action failed', { error })
+    await notifications.error(
+      i18n.t(errorKey, {
+        message: error instanceof Error ? error.message : String(error),
+      })
+    )
   }
 }
 

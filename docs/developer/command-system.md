@@ -139,7 +139,7 @@ const handleKeyDown = (e: KeyboardEvent) => {
 
 ### Native Menus
 
-The macOS menu is built in `src/lib/menu.ts`. Each item's `action` calls store actions or `src/lib/app-actions.ts` directly:
+The macOS menu is built in `src/lib/menu.ts`. Custom item actions call store actions, shared `src/lib/app-actions.ts` helpers, Tauri window APIs or typed commands from `@/lib/tauri-bindings` directly. They do not all pass through the command registry:
 
 ```typescript
 await MenuItem.new({
@@ -149,6 +149,8 @@ await MenuItem.new({
   action: handleOpenPreferences, // useUIStore.getState().setPreferencesOpen(true)
 })
 ```
+
+Window menu actions run only while main is focused. Their wrapper catches focus checks and native-action failures; the shared fullscreen toggle handles its own failures so callers do not report them twice. Palette window commands report failures through the command context. Preserve string errors from native commands as well as `Error.message` when constructing user feedback.
 
 ## Adding New Commands
 

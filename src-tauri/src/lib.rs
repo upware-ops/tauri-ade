@@ -176,7 +176,7 @@ pub(crate) fn show_main_window(app: &AppHandle) {
 }
 
 #[cfg(desktop)]
-fn restore_main_window(app: &AppHandle, restore_saved: bool) {
+fn restore_main_window(app: &AppHandle, refit_on_reopen: bool) {
     let Some(window) = app.get_webview_window("main") else {
         log::warn!("Main window not found");
         return;
@@ -184,13 +184,13 @@ fn restore_main_window(app: &AppHandle, restore_saved: bool) {
 
     let was_hidden = !window.is_visible().unwrap_or(true);
 
-    if restore_saved {
+    if refit_on_reopen {
         if let Err(e) = fit_main_window(&window, true) {
             log::warn!("Failed to fit main window to the monitor work area: {e}");
         }
     }
     if was_hidden
-        && restore_saved
+        && refit_on_reopen
         && !window.is_fullscreen().unwrap_or(false)
         && !window.is_maximized().unwrap_or(false)
     {

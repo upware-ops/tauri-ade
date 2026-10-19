@@ -34,6 +34,8 @@ function App() {
     let active = true
     let listening = false
     let unlisten: (() => void) | undefined
+    let unlistenMenuLanguage: (() => void) | undefined
+    let trayLabelsListening = false
     let revealFrame = 0
     let paintFrame = 0
     let revealRequest = 0
@@ -85,18 +87,22 @@ function App() {
       try {
         // Load preferences to get saved language
         const result = await commands.loadPreferences()
+        if (!active) return
         const savedLanguage =
           result.status === 'ok' ? result.data.language : null
 
         // Initialize language (will use system locale if no preference)
         await initializeLanguage(savedLanguage)
+        if (!active) return
 
         void syncTrayLabels()
         i18n.on('languageChanged', syncTrayLabels)
+        trayLabelsListening = true
 
         // Build the application menu with the initialized language
         await buildAppMenu()
-        setupMenuLanguageListener()
+        if (!active) return
+        unlistenMenuLanguage = setupMenuLanguageListener()
       } catch (error) {
         logger.warn('Failed to initialize language or menu', { error })
       }
@@ -132,6 +138,8 @@ function App() {
     return () => {
       active = false
       unlisten?.()
+      unlistenMenuLanguage?.()
+      if (trayLabelsListening) i18n.off('languageChanged', syncTrayLabels)
       document.removeEventListener('visibilitychange', revealIfShown)
       cancelAnimationFrame(revealFrame)
       cancelAnimationFrame(paintFrame)

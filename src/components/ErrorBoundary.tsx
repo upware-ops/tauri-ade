@@ -1,6 +1,6 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react'
 import { getCurrentWindow } from '@tauri-apps/api/window'
-import i18n from '@/i18n/config'
+import { useTranslation } from 'react-i18next'
 import { saveCrashState } from '@/lib/recovery'
 import { logger } from '@/lib/logger'
 
@@ -91,70 +91,90 @@ export class ErrorBoundary extends Component<Props, State> {
   override render() {
     if (this.state.hasError) {
       return (
-        <div className="flex min-h-screen flex-col items-center justify-center bg-background p-8">
-          <div className="w-full max-w-md text-center">
-            <div className="mb-6">
-              <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-destructive/10 flex items-center justify-center">
-                <svg
-                  className="h-8 w-8 text-destructive"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.082 16.5c-.77.833.192 2.5 1.732 2.5z"
-                  />
-                </svg>
-              </div>
-              <h1 className="text-2xl font-bold text-foreground mb-2">
-                {i18n.t('errorBoundary.title')}
-              </h1>
-              <p className="text-muted-foreground mb-6">
-                {i18n.t('errorBoundary.message')}
-              </p>
-            </div>
-
-            <div className="space-y-3">
-              <button
-                onClick={this.handleReload}
-                className="w-full px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
-              >
-                {i18n.t('errorBoundary.reload')}
-              </button>
-
-              <button
-                onClick={this.handleReset}
-                className="w-full px-4 py-2 bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/90 transition-colors"
-              >
-                {i18n.t('errorBoundary.tryAgain')}
-              </button>
-            </div>
-
-            {import.meta.env.DEV && this.state.error && (
-              <details className="mt-6 text-left">
-                <summary className="cursor-pointer text-sm text-muted-foreground hover:text-foreground">
-                  {i18n.t('errorBoundary.details')}
-                </summary>
-                <div className="mt-2 p-3 bg-muted rounded-md text-xs font-mono">
-                  <div className="text-destructive font-semibold mb-1">
-                    {this.state.error.name}: {this.state.error.message}
-                  </div>
-                  {this.state.error.stack && (
-                    <pre className="whitespace-pre-wrap text-muted-foreground overflow-auto">
-                      {this.state.error.stack}
-                    </pre>
-                  )}
-                </div>
-              </details>
-            )}
-          </div>
-        </div>
+        <ErrorFallback
+          error={this.state.error}
+          onReload={this.handleReload}
+          onReset={this.handleReset}
+        />
       )
     }
 
     return this.props.children
   }
+}
+
+function ErrorFallback({
+  error,
+  onReload,
+  onReset,
+}: {
+  error?: Error
+  onReload: () => void
+  onReset: () => void
+}) {
+  const { t } = useTranslation()
+
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center bg-background p-8">
+      <div className="w-full max-w-md text-center">
+        <div className="mb-6">
+          <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-destructive/10 flex items-center justify-center">
+            <svg
+              className="h-8 w-8 text-destructive"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.082 16.5c-.77.833.192 2.5 1.732 2.5z"
+              />
+            </svg>
+          </div>
+          <h1 className="text-2xl font-bold text-foreground mb-2">
+            {t('errorBoundary.title')}
+          </h1>
+          <p className="text-muted-foreground mb-6">
+            {t('errorBoundary.message')}
+          </p>
+        </div>
+
+        <div className="space-y-3">
+          <button
+            onClick={onReload}
+            className="w-full px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+          >
+            {t('errorBoundary.reload')}
+          </button>
+
+          <button
+            onClick={onReset}
+            className="w-full px-4 py-2 bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/90 transition-colors"
+          >
+            {t('errorBoundary.tryAgain')}
+          </button>
+        </div>
+
+        {import.meta.env.DEV && error && (
+          <details className="mt-6 text-left">
+            <summary className="cursor-pointer text-sm text-muted-foreground hover:text-foreground">
+              {t('errorBoundary.details')}
+            </summary>
+            <div className="mt-2 p-3 bg-muted rounded-md text-xs font-mono">
+              <div className="text-destructive font-semibold mb-1">
+                {error.name}: {error.message}
+              </div>
+              {error.stack && (
+                <pre className="whitespace-pre-wrap text-muted-foreground overflow-auto">
+                  {error.stack}
+                </pre>
+              )}
+            </div>
+          </details>
+        )}
+      </div>
+    </div>
+  )
 }

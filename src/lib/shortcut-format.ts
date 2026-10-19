@@ -61,7 +61,15 @@ export function isSameShortcut(a: string, b: string): boolean {
  */
 export function keyEventToShortcut(e: KeyboardEvent): string | null {
   // Don't capture if only modifier keys are pressed
-  const modifierKeys = ['Control', 'Shift', 'Alt', 'Meta', 'ContextMenu', 'OS']
+  const modifierKeys = [
+    'Control',
+    'Shift',
+    'Alt',
+    'AltGraph',
+    'Meta',
+    'ContextMenu',
+    'OS',
+  ]
   if (modifierKeys.includes(e.key)) {
     return null
   }

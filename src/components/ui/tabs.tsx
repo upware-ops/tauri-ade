@@ -114,7 +114,7 @@ function TabsTrigger({
       )}
       onClick={event => {
         onClick?.(event)
-        if (!event.defaultPrevented) tabs.setValue(value)
+        if (!event.defaultPrevented && !active) tabs.setValue(value)
       }}
       {...props}
     />

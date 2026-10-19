@@ -23,6 +23,7 @@ function AvatarImage({
   ...props
 }: React.ComponentProps<'img'>) {
   const [loadedSource, setLoadedSource] = useState<string>()
+  const loaded = Boolean(src) && loadedSource === src
 
   return (
     <img
@@ -30,7 +31,7 @@ function AvatarImage({
       src={src}
       className={cn(
         'absolute inset-0 z-10 size-full bg-secondary object-cover',
-        loadedSource !== src && 'opacity-0',
+        !loaded && 'opacity-0',
         className
       )}
       onLoad={event => {

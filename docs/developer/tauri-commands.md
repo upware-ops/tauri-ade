@@ -127,6 +127,8 @@ pub struct MyType {
 // src-tauri/src/bindings.rs
 
 pub fn generate_bindings() -> Builder<tauri::Wry> {
+    use crate::commands::my_feature;
+
     Builder::<tauri::Wry>::new().commands(collect_commands![
         // ... existing commands
         my_feature::my_new_command,  // Add here
@@ -221,19 +223,25 @@ vi.mock('@/lib/tauri-bindings', () => ({
 
 ## Available Commands
 
-| Command                                                  | Parameters                            | Returns                            | Description                                   |
-| -------------------------------------------------------- | ------------------------------------- | ---------------------------------- | --------------------------------------------- |
-| `greet`                                                  | `name: string`                        | `Result<string, string>`           | Simple greeting                               |
-| `loadPreferences`                                        | none                                  | `Result<AppPreferences, string>`   | Load preferences                              |
-| `savePreferences`                                        | `preferences: AppPreferences`         | `Result<null, string>`             | Save preferences                              |
-| `sendNativeNotification`                                 | `title: string, body: string \| null` | `Result<null, string>`             | System notification                           |
-| `saveEmergencyData`                                      | `filename: string, data: JsonValue`   | `Result<null, RecoveryError>`      | Save recovery data                            |
-| `loadEmergencyData`                                      | `filename: string`                    | `Result<JsonValue, RecoveryError>` | Load recovery data                            |
-| `cleanupOldRecoveryFiles`                                | none                                  | `Result<number, RecoveryError>`    | Cleanup old files                             |
-| `showQuickPane` / `dismissQuickPane` / `toggleQuickPane` | none                                  | `Result<null, string>`             | Quick pane visibility                         |
-| `getDefaultQuickPaneShortcut`                            | none                                  | `string`                           | Default quick pane shortcut                   |
-| `updateQuickPaneShortcut`                                | `shortcut: string \| null`            | `Result<null, string>`             | Change the global shortcut (`null` = default) |
-| `setTrayLabels`                                          | `show: string, quit: string`          | `Result<null, string>`             | Translated tray menu labels                   |
+| Command                                                  | Parameters                            | Returns                            | Description                                      |
+| -------------------------------------------------------- | ------------------------------------- | ---------------------------------- | ------------------------------------------------ |
+| `greet`                                                  | `name: string`                        | `Result<string, string>`           | Simple greeting                                  |
+| `loadPreferences`                                        | none                                  | `Result<AppPreferences, string>`   | Load preferences                                 |
+| `savePreferences`                                        | `preferences: AppPreferences`         | `Result<null, string>`             | Save preferences                                 |
+| `sendNativeNotification`                                 | `title: string, body: string \| null` | `Result<null, string>`             | System notification                              |
+| `saveEmergencyData`                                      | `filename: string, data: JsonValue`   | `Result<null, RecoveryError>`      | Save recovery data                               |
+| `loadEmergencyData`                                      | `filename: string`                    | `Result<JsonValue, RecoveryError>` | Load recovery data                               |
+| `cleanupOldRecoveryFiles`                                | none                                  | `Result<number, RecoveryError>`    | Cleanup old files                                |
+| `showQuickPane` / `dismissQuickPane` / `toggleQuickPane` | none                                  | `Result<null, string>`             | Quick pane visibility                            |
+| `getDefaultQuickPaneShortcut`                            | none                                  | `string`                           | Default quick pane shortcut                      |
+| `updateQuickPaneShortcut`                                | `shortcut: string \| null`            | `Result<null, string>`             | Change the global shortcut (`null` = default)    |
+| `setTrayLabels`                                          | `show: string, quit: string`          | `Result<null, string>`             | Translated tray menu labels                      |
+| `completeStartup`                                        | none                                  | `Result<null, string>`             | Signal that the calling startup window is ready  |
+| `acknowledgeStartupPaint`                                | none                                  | `Result<null, string>`             | Confirm main-window paint and dismiss the splash |
+| `toggleMainWindowMaximize`                               | none                                  | `Result<null, string>`             | Toggle main-window maximization                  |
+| `setMainWindowFullscreen`                                | `fullscreen: boolean`                 | `Result<null, string>`             | Set main-window fullscreen mode                  |
+
+Tauri injects the calling window into the startup commands; frontend callers do not pass window labels. `completeStartup` accepts the main and splash windows. `acknowledgeStartupPaint` accepts only main, after startup completes. The mode commands also accept only main and capture its normal bounds before changing native mode. See [App Readiness and the Splash Screen](./architecture-guide.md#app-readiness-and-the-splash-screen) for lifecycle ownership and [`startup.rs`](../../src-tauri/src/commands/startup.rs) for the command implementations.
 
 ## Dependencies
 

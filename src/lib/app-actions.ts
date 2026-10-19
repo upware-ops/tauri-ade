@@ -105,7 +105,15 @@ async function runUpdateCheck(): Promise<void> {
       }
     )
     if (shouldRestart) {
-      await relaunch()
+      try {
+        await relaunch()
+      } catch (error) {
+        logger.error('Update restart failed', { error })
+        await message(t('updates.failedMessage', { message: String(error) }), {
+          title: t('updates.failedTitle'),
+          kind: 'error',
+        })
+      }
     }
   } finally {
     updateCheck = null
@@ -123,8 +131,19 @@ export async function showAbout(): Promise<void> {
 }
 
 export async function toggleFullscreen(): Promise<void> {
-  const appWindow = getCurrentWindow()
-  unwrapResult(
-    await commands.setMainWindowFullscreen(!(await appWindow.isFullscreen()))
-  )
+  let errorKey = 'toast.error.generic'
+  try {
+    const fullscreen = !(await getCurrentWindow().isFullscreen())
+    errorKey = fullscreen
+      ? 'toast.error.fullscreenEnterFailed'
+      : 'toast.error.fullscreenExitFailed'
+    unwrapResult(await commands.setMainWindowFullscreen(fullscreen))
+  } catch (error) {
+    logger.error('Failed to toggle fullscreen', { error })
+    await notifications.error(
+      i18n.t(errorKey, {
+        message: error instanceof Error ? error.message : String(error),
+      })
+    )
+  }
 }

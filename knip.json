@@ -3,6 +3,8 @@
   "entry": [
     "src/main.tsx",
     "src/quick-pane-main.tsx",
+    "src/library-main.tsx",
+    "src/splash-main.tsx",
     "vite.config.ts",
     "vitest.config.ts"
   ],

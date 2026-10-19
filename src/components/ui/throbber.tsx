@@ -34,7 +34,7 @@ function Throbber({
   phase?: number
   interpolation?: number
   reverse?: boolean
-  ink?: number[]
+  ink?: [number, number, number]
   opacity?: number
   resting?: number
   capture?: boolean

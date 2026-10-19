@@ -136,7 +136,7 @@ export function SplashScreen({ done, onReady }: SplashScreenProps) {
 
       <span role="status" aria-live="polite" className="sr-only">
         {t('splash.loading', { appName: t('app.name') })}
-        <span>{t(status)}</span>
+        <span aria-hidden="true">{t(status)}</span>
       </span>
 
       {version && (

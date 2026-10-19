@@ -136,7 +136,6 @@ export function OverlayExamples() {
                   event.preventDefault()
                   setTaskName(draftName.trim())
                   setBranch(draftBranch)
-                  setDeleted(false)
                   setDialogOpen(false)
                   toast.success(t('library.overlays.taskSaved'))
                 }}
