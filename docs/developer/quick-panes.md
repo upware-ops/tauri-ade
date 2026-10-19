@@ -27,10 +27,10 @@ quick-pane.html     → src/quick-pane-main.tsx → Quick pane React app
 ```typescript
 // vite.config.ts
 build: {
-  rollupOptions: {
+  rolldownOptions: {
     input: {
-      main: resolve(__dirname, 'index.html'),
-      'quick-pane': resolve(__dirname, 'quick-pane.html'),
+      main: resolve(import.meta.dirname, 'index.html'),
+      'quick-pane': resolve(import.meta.dirname, 'quick-pane.html'),
     },
   },
 }
@@ -86,6 +86,8 @@ onFocusChanged(({ payload: focused }) => {
   if (focused) applyTheme()
 })
 ```
+
+Language works the same way. The main window's `languageChanged` handler (`src/i18n/config.ts`) writes `localStorage['ui-language']`, and the quick pane applies it on mount and on focus.
 
 ## Platform Behavior
 
@@ -209,14 +211,12 @@ listen('quick-pane-submit', async ({ payload }) => {
 
 ### Changing Window Size
 
-Update the constants in `src-tauri/src/lib.rs`:
+Update the constants in `src-tauri/src/commands/quick_pane.rs` (both window builders use them):
 
 ```rust
 const QUICK_PANE_WIDTH: f64 = 500.0;
 const QUICK_PANE_HEIGHT: f64 = 72.0;
 ```
-
-Also update the window creation in `init_quick_pane_macos` and `init_quick_pane_standard`.
 
 ## Implementation Notes
 
@@ -271,4 +271,4 @@ tauri-nspanel = { git = "https://github.com/ahkohd/tauri-nspanel", branch = "v2.
 ## Limitations
 
 - **Linux Wayland**: Global shortcuts are not supported
-- **Visual blur**: Native frosted glass blur is not available due to conflicts between `window-vibrancy` and `tauri-nspanel`. The current implementation uses CSS `backdrop-blur` with semi-transparent backgrounds.
+- **Visual blur**: Native frosted glass blur is not available due to conflicts between `window-vibrancy` and `tauri-nspanel`.

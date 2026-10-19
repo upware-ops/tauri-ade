@@ -1,5 +1,6 @@
 import i18n from 'i18next'
 import { initReactI18next } from 'react-i18next'
+import { logger } from '@/lib/logger'
 import en from '../../locales/en.json'
 import ar from '../../locales/ar.json'
 import fr from '../../locales/fr.json'
@@ -27,6 +28,11 @@ i18n.on('languageChanged', lng => {
   const dir = rtlLanguages.includes(lng) ? 'rtl' : 'ltr'
   document.documentElement.dir = dir
   document.documentElement.lang = lng
+  try {
+    localStorage.setItem('ui-language', lng)
+  } catch (error) {
+    logger.warn('Failed to cache the UI language', { error })
+  }
 })
 
 export default i18n

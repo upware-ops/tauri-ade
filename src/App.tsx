@@ -1,31 +1,83 @@
 import { useEffect, useState } from 'react'
-import { check } from '@tauri-apps/plugin-updater'
-import { relaunch } from '@tauri-apps/plugin-process'
+import { listen } from '@tauri-apps/api/event'
+import { getCurrentWindow } from '@tauri-apps/api/window'
 import { initializeCommandSystem } from './lib/commands'
-import { buildAppMenu, setupMenuLanguageListener } from './lib/menu'
+import {
+  buildAppMenu,
+  setupMenuLanguageListener,
+  syncTrayLabels,
+} from './lib/menu'
+import { checkForUpdates } from './lib/app-actions'
+import i18n from './i18n/config'
 import { initializeLanguage } from './i18n/language-init'
 import { logger } from './lib/logger'
 import { cleanupOldFiles } from './lib/recovery'
-import { commands } from './lib/tauri-bindings'
+import { commands, unwrapResult } from './lib/tauri-bindings'
 import './App.css'
 import { MainWindow } from './components/layout/MainWindow'
+import { StartupReveal } from './components/layout/StartupReveal'
 import { ThemeProvider } from './components/ThemeProvider'
 import { ErrorBoundary } from './components/ErrorBoundary'
-import { SplashScreen } from './components/splash'
 import { useSquareCornersEffect } from './hooks/useSquareCornersEffect'
 
-const SPLASH_MIN_MS = 2000
-const SPLASH_MAX_MS = 8000
+const STARTUP_MAX_MS = 8000
 
 const wait = (ms: number) =>
   new Promise<void>(resolve => setTimeout(resolve, ms))
 
 function App() {
   useSquareCornersEffect()
-  const [bootReady, setBootReady] = useState(false)
+  const [startupVisible, setStartupVisible] = useState(false)
 
   // Initialize command system and cleanup on app startup
   useEffect(() => {
+    let active = true
+    let listening = false
+    let unlisten: (() => void) | undefined
+    let unlistenMenuLanguage: (() => void) | undefined
+    let trayLabelsListening = false
+    let revealFrame = 0
+    let paintFrame = 0
+    let revealRequest = 0
+    const revealMain = () => {
+      const request = ++revealRequest
+      cancelAnimationFrame(revealFrame)
+      cancelAnimationFrame(paintFrame)
+      revealFrame = requestAnimationFrame(() => {
+        paintFrame = requestAnimationFrame(() => {
+          if (!active) return
+          void Promise.race([
+            commands.acknowledgeStartupPaint().then(unwrapResult),
+            wait(1500),
+          ])
+            .catch(error => {
+              logger.warn('Failed to acknowledge the startup paint', { error })
+            })
+            .finally(() => {
+              if (active && request === revealRequest) setStartupVisible(true)
+            })
+        })
+      })
+    }
+    const revealIfShown = async () => {
+      if (!active || listening || document.visibilityState !== 'visible') return
+      try {
+        if (await getCurrentWindow().isVisible()) revealMain()
+      } catch (error) {
+        logger.warn('Failed to check startup window visibility', { error })
+      }
+    }
+    document.addEventListener('visibilitychange', revealIfShown)
+    const revealListener = listen('startup-reveal', revealMain)
+      .then(cleanup => {
+        if (!active) return cleanup()
+        unlisten = cleanup
+        listening = true
+      })
+      .catch(error => {
+        logger.warn('Failed to register the startup reveal', { error })
+      })
+
     logger.info('🚀 Frontend application starting up')
     initializeCommandSystem()
     logger.debug('Command system initialized')
@@ -35,16 +87,22 @@ function App() {
       try {
         // Load preferences to get saved language
         const result = await commands.loadPreferences()
+        if (!active) return
         const savedLanguage =
           result.status === 'ok' ? result.data.language : null
 
         // Initialize language (will use system locale if no preference)
         await initializeLanguage(savedLanguage)
+        if (!active) return
+
+        void syncTrayLabels()
+        i18n.on('languageChanged', syncTrayLabels)
+        trayLabelsListening = true
 
         // Build the application menu with the initialized language
         await buildAppMenu()
-        logger.debug('Application menu built')
-        setupMenuLanguageListener()
+        if (!active) return
+        unlistenMenuLanguage = setupMenuLanguageListener()
       } catch (error) {
         logger.warn('Failed to initialize language or menu', { error })
       }
@@ -52,10 +110,19 @@ function App() {
 
     // The race caps a hung IPC: a stuck boot must not leave the splash up
     // forever on top of an app that is otherwise working.
-    void Promise.all([
-      Promise.race([initLanguageAndMenu(), wait(SPLASH_MAX_MS)]),
-      wait(SPLASH_MIN_MS),
-    ]).then(() => setBootReady(true))
+    void Promise.race([
+      Promise.all([initLanguageAndMenu(), revealListener]),
+      wait(STARTUP_MAX_MS),
+    ])
+      .then(async () => {
+        if (!active) return
+        unwrapResult(await commands.completeStartup())
+        if (!listening) void revealIfShown()
+      })
+      .catch(error => {
+        logger.error('Failed to finish application startup', { error })
+        if (active) void revealIfShown()
+      })
 
     // Clean up old recovery files on startup
     cleanupOldFiles().catch(error => {
@@ -68,69 +135,35 @@ function App() {
       mode: import.meta.env.MODE,
     })
 
-    // Auto-updater logic - check for updates 5 seconds after app loads
-    const checkForUpdates = async () => {
-      try {
-        const update = await check()
-        if (update) {
-          logger.info(`Update available: ${update.version}`)
-
-          // Show confirmation dialog
-          const shouldUpdate = confirm(
-            `Update available: ${update.version}\n\nWould you like to install this update now?`
-          )
-
-          if (shouldUpdate) {
-            try {
-              // Download and install with progress logging
-              await update.downloadAndInstall(event => {
-                switch (event.event) {
-                  case 'Started':
-                    logger.info(`Downloading ${event.data.contentLength} bytes`)
-                    break
-                  case 'Progress':
-                    logger.info(`Downloaded: ${event.data.chunkLength} bytes`)
-                    break
-                  case 'Finished':
-                    logger.info('Download complete, installing...')
-                    break
-                }
-              })
-
-              // Ask if user wants to restart now
-              const shouldRestart = confirm(
-                'Update completed successfully!\n\nWould you like to restart the app now to use the new version?'
-              )
-
-              if (shouldRestart) {
-                await relaunch()
-              }
-            } catch (updateError) {
-              logger.error(`Update installation failed: ${String(updateError)}`)
-              alert(
-                `Update failed: There was a problem with the automatic download.\n\n${String(updateError)}`
-              )
-            }
-          }
-        }
-      } catch (checkError) {
-        logger.error(`Update check failed: ${String(checkError)}`)
-        // Silent fail for update checks - don't bother user with network issues
-      }
+    return () => {
+      active = false
+      unlisten?.()
+      unlistenMenuLanguage?.()
+      if (trayLabelsListening) i18n.off('languageChanged', syncTrayLabels)
+      document.removeEventListener('visibilitychange', revealIfShown)
+      cancelAnimationFrame(revealFrame)
+      cancelAnimationFrame(paintFrame)
     }
-
-    // Check for updates 5 seconds after app loads
-    const updateTimer = setTimeout(checkForUpdates, 5000)
-    return () => clearTimeout(updateTimer)
   }, [])
 
+  useEffect(() => {
+    if (!startupVisible) return
+
+    const updateTimer = setTimeout(
+      () => void checkForUpdates({ interactive: false }),
+      5000
+    )
+    return () => clearTimeout(updateTimer)
+  }, [startupVisible])
+
   return (
-    <ErrorBoundary>
-      <ThemeProvider>
-        <MainWindow />
-        <SplashScreen done={bootReady} />
-      </ThemeProvider>
-    </ErrorBoundary>
+    <StartupReveal visible={startupVisible}>
+      <ErrorBoundary>
+        <ThemeProvider>
+          <MainWindow />
+        </ThemeProvider>
+      </ErrorBoundary>
+    </StartupReveal>
   )
 }
 

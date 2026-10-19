@@ -21,7 +21,7 @@ function MyComponent() {
   const context = useCommandContext()
 
   const handleButtonClick = () => {
-    executeCommand('toggle-sidebar', context)
+    executeCommand('show-left-sidebar', context)
   }
 
   return (
@@ -38,7 +38,7 @@ function MyComponent() {
 
 ```typescript
 import { useUIStore } from '@/store/ui-store'
-import type { AppCommand } from '@/types/commands'
+import type { AppCommand } from './types'
 
 export const myFeatureCommands: AppCommand[] = [
   {
@@ -77,8 +77,8 @@ export function initializeCommandSystem(): void {
 
 If your commands need new actions, add them to:
 
-- `CommandContext` interface in `types/commands.ts`
-- `useCommandContext` hook in `hooks/use-command-context.ts`
+- `CommandContext` interface in `src/lib/commands/types.ts`
+- the `commandContext` object in `src/hooks/use-command-context.ts`
 
 ## Performance Patterns
 
@@ -101,22 +101,22 @@ execute: context => {
 Context only provides essential actions, no state subscriptions:
 
 ```typescript
-// Only essential actions - no state values
-export function useCommandContext(): CommandContext {
-  const { toggleSidebar } = useUIStore()
-  return { toggleSidebar /* other actions */ }
+// Only essential actions - no state values. A module-level singleton, so it's stable.
+const commandContext: CommandContext = {
+  openPreferences: () => useUIStore.getState().togglePreferences(),
+  showToast: (message, type = 'info') =>
+    void notify(message, undefined, { type }),
 }
 ```
 
 ## Available Commands
 
-### Navigation Commands
+- **Navigation** (`navigation-commands.ts`): `open-home`, `open-library`, `show-left-sidebar` and `hide-left-sidebar`, `show-right-sidebar` and `hide-right-sidebar` (only when applicable), `open-preferences`
+- **Window** (`window-commands.ts`): `window-close`, `window-minimize`, `window-toggle-maximize`, `window-fullscreen`, `window-exit-fullscreen`
+- **App** (`app-commands.ts`): `app-about`, `app-check-updates`, `app-quit`
+- **Debug** (`notification-commands.ts`): `notification.test-toast`
 
-- `toggle-sidebar` - Show/hide sidebar (always available)
-- `show-sidebar` - Show sidebar (only when hidden)
-- `hide-sidebar` - Hide sidebar (only when visible)
-- `toggle-command-palette` - Show/hide command palette
-- `open-preferences` - Open preferences dialog
+These categories identify source modules. Palette grouping is separate: `open-home` uses the `navigation` group; `open-library` and `open-preferences` use `settings`.
 
 ## Command Structure (Simplified)
 

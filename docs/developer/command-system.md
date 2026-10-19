@@ -125,7 +125,7 @@ Link shortcuts to commands via the command context:
 ```typescript
 // src/hooks/use-keyboard-shortcuts.ts
 const handleKeyDown = (e: KeyboardEvent) => {
-  if (e.metaKey || e.ctrlKey) {
+  if (isMacOS ? e.metaKey : e.ctrlKey) {
     switch (e.key) {
       case ',': {
         e.preventDefault()
@@ -139,14 +139,18 @@ const handleKeyDown = (e: KeyboardEvent) => {
 
 ### Native Menus
 
-Menu events trigger commands through Tauri events:
+The macOS menu is built in `src/lib/menu.ts`. Custom item actions call store actions, shared `src/lib/app-actions.ts` helpers, Tauri window APIs or typed commands from `@/lib/tauri-bindings` directly. They do not all pass through the command registry:
 
 ```typescript
-// React side - in useMainWindowEventListeners
-listen('menu-preferences', () => {
-  commandContext.openPreferences()
+await MenuItem.new({
+  id: 'preferences',
+  text: t('menu.preferences'),
+  accelerator: 'CmdOrCtrl+,',
+  action: handleOpenPreferences, // useUIStore.getState().setPreferencesOpen(true)
 })
 ```
+
+Window menu actions run only while main is focused. Their wrapper catches focus checks and native-action failures; the shared fullscreen toggle handles its own failures so callers do not report them twice. Palette window commands report failures through the command context. Preserve string errors from native commands as well as `Error.message` when constructing user feedback.
 
 ## Adding New Commands
 
@@ -199,17 +203,12 @@ export function initializeCommandSystem(): void {
 ### Step 4: Extend Context (if needed)
 
 ```typescript
-// src/hooks/use-command-context.ts
-export function useCommandContext(): CommandContext {
-  return useMemo(
-    () => ({
-      // ... existing actions
-      myNewAction: () => {
-        /* implementation */
-      },
-    }),
-    []
-  )
+// src/hooks/use-command-context.ts - a module-level singleton
+const commandContext: CommandContext = {
+  // ... existing actions
+  myNewAction: () => {
+    /* implementation */
+  },
 }
 
 // Update CommandContext type in types.ts
@@ -221,8 +220,9 @@ Organize commands into logical groups (used in command palette headings):
 
 - **navigation**: Sidebar toggles, view switching
 - **settings**: Preferences, configuration
-- **notifications**: Notification actions
 - **window**: Window management (minimize, close, etc.)
+- **app**: About, Check for Updates, Quit
+- **debug**: Test toast
 
 Group labels are translated via `commands.group.{groupName}` keys.
 

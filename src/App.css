@@ -1,22 +1,30 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @import './theme-variables.css';
+@import './fonts.css';
+@import './components/ui/library.css';
+@import './components/component-library/library.css';
+@import './components/layout/screens.css';
 
 @custom-variant dark (&:is(.dark *));
 
-@theme {
-  --animate-splash-breathe: splash-breathe 4s ease-in-out infinite alternate;
+html,
+body,
+#root {
+  height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
 }
 
-@keyframes splash-breathe {
-  from {
-    opacity: 0.35;
-    transform: scale(0.92);
-  }
-  to {
-    opacity: 0.65;
-    transform: scale(1.06);
-  }
+#root {
+  min-height: 0;
+}
+
+.startup-window-surface {
+  border-radius: var(--app-corner-radius, 12px);
+  background-color: var(--background);
+  background-image: var(--grain-main);
+  background-size: 776px 776px;
 }
 
 @layer base {
@@ -37,8 +45,8 @@
 
   body {
     @apply text-foreground;
-    font-family: -apple-system, 'Segoe UI', 'Roboto', sans-serif;
-    font-size: 16px;
+    font-family: var(--font-ui);
+    font-size: 13px;
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;

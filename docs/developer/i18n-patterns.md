@@ -199,11 +199,15 @@ Use CSS logical properties instead of physical properties for automatic RTL supp
 
 ## Native Menus
 
-Native menus are built from JavaScript to use the same i18n system as React components.
+Native menus are built from JavaScript to use the same i18n system as React components. Only macOS has a native menu bar.
 
 ### Menu Builder Location
 
-See `/src/lib/menu.ts` for the menu builder implementation.
+See `/src/lib/menu.ts` for the menu builder implementation. Its `syncTrayLabels()` also sends the translated tray labels to Rust (`commands.setTrayLabels`) at startup and on every language change, on all platforms.
+
+### Quick Pane
+
+The quick pane is a separate window with its own i18n instance. The main window's `languageChanged` handler (`src/i18n/config.ts`) caches the active language in `localStorage['ui-language']`, and `QuickPaneApp` applies the cached value on mount and on focus. This cache is optional: failed writes are logged and do not block other language listeners or disk preference persistence. Saved preferences remain authoritative at main-window startup.
 
 ### Adding Menu Items
 
@@ -225,15 +229,12 @@ export async function buildAppMenu(): Promise<Menu> {
 
 ### Automatic Menu Rebuild
 
-Menus are automatically rebuilt when the language changes:
+`setupMenuLanguageListener()` registers the rebuild handler and returns its unsubscribe function. `App` owns this subscription and the `syncTrayLabels` language listener, removes both during effect cleanup, and checks that startup is still active before registering listeners after asynchronous initialization:
 
 ```typescript
-// In /src/lib/menu.ts
-export function setupMenuLanguageListener(): void {
-  i18n.on('languageChanged', async () => {
-    await buildAppMenu()
-  })
-}
+const unlistenMenuLanguage = setupMenuLanguageListener()
+// When the owning effect cleans up:
+unlistenMenuLanguage()
 ```
 
 ## System Locale Detection

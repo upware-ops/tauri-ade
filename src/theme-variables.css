@@ -1,17 +1,20 @@
-/*
- * Theme Variables (shadcn/ui compatible)
- *
- * To customize the theme, visit https://ui.shadcn.com/themes and use the
- * theme builder. You can copy and paste the generated CSS blocks directly
- * into this file, replacing the @theme inline, :root, and .dark sections.
- */
-
 @theme inline {
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-active: var(--surface-active);
+  --color-surface-hover: var(--surface-hover);
+  --color-surface-ghost: var(--surface-ghost);
+  --color-control: var(--control);
+  --color-border-strong: var(--border-strong);
+  --color-text-secondary: var(--text-secondary);
+  --color-success: var(--success);
+  --color-status-progress: var(--status-progress);
+  --color-status-review: var(--status-review);
+  --color-status-blocked: var(--status-blocked);
   --color-brand: var(--brand);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-ui);
+  --font-mono: var(--font-code);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -43,7 +46,7 @@
   --color-card: var(--card);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
+  --radius-lg: calc(var(--radius) + 2px);
   --radius-xl: calc(var(--radius) + 4px);
   --radius-2xl: calc(var(--radius) + 8px);
   --radius-3xl: calc(var(--radius) + 12px);
@@ -51,72 +54,161 @@
 }
 
 :root {
-  --brand: oklch(0.539 0.208 266.5);
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.58 0.22 27);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.809 0.105 251.813);
-  --chart-2: oklch(0.623 0.214 259.815);
-  --chart-3: oklch(0.546 0.245 262.881);
-  --chart-4: oklch(0.488 0.243 264.376);
-  --chart-5: oklch(0.424 0.199 265.638);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --font-ui: 'Inter', -apple-system, 'Segoe UI', sans-serif;
+  --font-code: 'Geist Mono', ui-monospace, monospace;
+  --brand: #3b82f6;
+  --background: #f5f4f2;
+  --foreground: #1c1917;
+  --card: #ffffff;
+  --card-foreground: #1c1917;
+  --popover: #ffffff;
+  --popover-foreground: #1c1917;
+  --primary: #292524;
+  --primary-foreground: #f5f4f2;
+  --secondary: #e7e5e4;
+  --secondary-foreground: #292524;
+  --muted: #e7e5e4;
+  --muted-foreground: #625b56;
+  --accent: #e7e5e4;
+  --accent-foreground: #1c1917;
+  --destructive: #b91c1c;
+  --border: #1c19171c;
+  --border-strong: #1c191738;
+  --input: #1c191738;
+  --ring: #3b82f6;
+  --surface-raised: #e7e5e4;
+  --surface-active: #eae8e5;
+  --surface-hover: #d6d3d1;
+  --surface-ghost: #1c191705;
+  --control: #f1f0ee;
+  --text-secondary: #44403c;
+  --text-placeholder: #78716c;
+  --text-inverse: #f5f4f2;
+  --success: #15803d;
+  --status-progress: #8a6800;
+  --status-progress-icon: #8a6800;
+  --status-review: #7957a3;
+  --status-blocked: #8a662c;
+  --scrollbar-thumb: #a8a29e;
+  --chart-1: #3b82f6;
+  --chart-2: #15803d;
+  --chart-3: #7957a3;
+  --chart-4: #8a6800;
+  --chart-5: #b91c1c;
+  --radius: 8px;
+  --sidebar: #efedeb;
+  --sidebar-foreground: #1c1917;
+  --sidebar-primary: #292524;
+  --sidebar-primary-foreground: #f5f4f2;
+  --sidebar-accent: #e7e5e4;
+  --sidebar-accent-foreground: #1c1917;
+  --sidebar-border: #d6d3d1;
+  --sidebar-ring: #3b82f6;
+  --grain-xs: url('/design/grain-xs.png');
+  --grain-sm: url('/design/grain-sm.png');
+  --grain-md: url('/design/grain-md.png');
+  --grain-lg: url('/design/grain-lg.png');
+  --grain-main: var(--grain-md);
+  --grain-sidebar: var(--grain-sm);
+  --grain-control: var(--grain-xs);
 }
 
 .dark {
-  --brand: oklch(0.62 0.19 266.5);
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.87 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.371 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.809 0.105 251.813);
-  --chart-2: oklch(0.623 0.214 259.815);
-  --chart-3: oklch(0.546 0.245 262.881);
-  --chart-4: oklch(0.488 0.243 264.376);
-  --chart-5: oklch(0.424 0.199 265.638);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --brand: #60a5fa;
+  --background: #151110;
+  --foreground: #f5f4f2;
+  --card: #201e1c;
+  --card-foreground: #f5f4f2;
+  --popover: #201e1c;
+  --popover-foreground: #f5f4f2;
+  --primary: #e7e5e4;
+  --primary-foreground: #1c1917;
+  --secondary: #2c2826;
+  --secondary-foreground: #f5f4f2;
+  --muted: #272523;
+  --muted-foreground: #a8a29e;
+  --accent: #272523;
+  --accent-foreground: #f5f4f2;
+  --destructive: #f87171;
+  --border: #ffffff17;
+  --border-strong: #ffffff1f;
+  --input: #ffffff1f;
+  --ring: #60a5fa;
+  --surface-raised: #2c2826;
+  --surface-active: #272523;
+  --surface-hover: #35312e;
+  --surface-ghost: #ffffff09;
+  --control: #1d1918;
+  --text-secondary: #d6d3d1;
+  --text-placeholder: #f5f4f280;
+  --text-inverse: #1c1917;
+  --success: #4ade80;
+  --status-progress: #f2c900;
+  --status-progress-icon: #ffdc2d;
+  --status-review: #b4a0ce;
+  --status-blocked: #c9a568;
+  --scrollbar-thumb: #756d67;
+  --chart-1: #60a5fa;
+  --chart-2: #4ade80;
+  --chart-3: #b4a0ce;
+  --chart-4: #f2c900;
+  --chart-5: #f87171;
+  --sidebar: #1b1917;
+  --sidebar-foreground: #f5f4f2;
+  --sidebar-primary: #e7e5e4;
+  --sidebar-primary-foreground: #1c1917;
+  --sidebar-accent: #272523;
+  --sidebar-accent-foreground: #f5f4f2;
+  --sidebar-border: #393431;
+  --sidebar-ring: #60a5fa;
+}
+
+@layer base {
+  :is(
+    [data-slot='button'],
+    [data-slot='badge'],
+    [data-slot='input'],
+    [data-slot='textarea'],
+    [data-slot='select-trigger'],
+    [data-slot='native-select'],
+    [data-slot='input-group'],
+    [data-slot='checkbox'],
+    [data-slot='switch'],
+    [data-slot='radio-group-item'],
+    [data-slot='toggle'],
+    [data-slot='card'],
+    [data-slot='alert'],
+    [data-slot='command'],
+    [data-slot='popover-content'],
+    [data-slot='dialog-content'],
+    [data-slot='alert-dialog-content'],
+    [data-slot='sheet-content'],
+    [data-slot='dropdown-menu-content'],
+    [data-slot='dropdown-menu-sub-content'],
+    [data-slot='tooltip-content'],
+    [data-slot='kbd'],
+    [data-slot='skeleton'],
+    [data-slot='avatar'],
+    [data-slot='filter-chip'],
+    [data-slot='input-otp-slot'],
+    [data-slot='tag-input'],
+    [data-slot='progress'],
+    [data-slot='toggle-group-item'],
+    [data-slot='tabs-trigger'],
+    [data-slot='item'],
+    [data-slot='empty'],
+    [data-slot='empty-icon'],
+    [data-slot='slider-track'],
+    [data-slot='slider-range'],
+    [data-slot='select-content'],
+    [data-slot='switch-thumb'],
+    [data-slot='skeleton-card'],
+    [data-slot='loading-board'],
+    [data-slot='command-footer'],
+    [data-tauri-drag-region]
+  ) {
+    background-image: var(--grain-control);
+    background-repeat: repeat;
+    background-size: 776px 776px;
+  }
 }

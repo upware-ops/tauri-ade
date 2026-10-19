@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useUIStore } from '@/store/ui-store'
 import { useCommandContext } from '@/hooks/use-command-context'
+import { getPlatform } from '@/hooks/use-platform'
 import { getAllCommands, executeCommand } from '@/lib/commands'
 import {
   CommandDialog,
@@ -57,8 +58,10 @@ export function CommandPalette() {
 
   // Keyboard shortcut handler
   useEffect(() => {
+    const isMac = getPlatform() === 'macos'
+
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
+      if (e.key === 'k' && (isMac ? e.metaKey : e.ctrlKey)) {
         e.preventDefault()
         toggleCommandPalette()
       }
@@ -84,6 +87,7 @@ export function CommandPalette() {
       onOpenChange={handleOpenChange}
       title={t('commandPalette.title')}
       description={t('commandPalette.placeholder')}
+      shouldFilter={false}
     >
       <CommandInput
         placeholder={t('commandPalette.placeholder')}

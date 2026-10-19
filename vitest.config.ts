@@ -13,6 +13,9 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'jsdom',
+    // Node 25+ defines a global localStorage that hides jsdom's
+    execArgv:
+      'localStorage' in globalThis ? ['--no-experimental-webstorage'] : [],
     setupFiles: ['./src/test/setup.ts'],
     include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     exclude: ['node_modules', 'dist', 'src-tauri', '.git', '.cache', 'build'],

@@ -15,21 +15,23 @@ export function AdvancedPane() {
   const { t } = useTranslation()
   // Example local state - these are NOT persisted to disk
   // To add persistent preferences:
-  // 1. Add the field to AppPreferences in both Rust and TypeScript
-  // 2. Use usePreferencesManager() and updatePreferences()
+  // 1. Add the field to AppPreferences in src-tauri/src/types.rs and run npm run rust:bindings
+  // 2. Use usePreferences() and useSavePreferences()
   const [exampleAdvancedToggle, setExampleAdvancedToggle] = useState(false)
   const [exampleDropdown, setExampleDropdown] = useState('option1')
 
   return (
-    <div className="space-y-6">
+    <div>
       <SettingsSection title={t('preferences.advanced.title')}>
         <SettingsField
+          htmlFor="example-advanced-toggle"
           label={t('preferences.advanced.toggle')}
           description={t('preferences.advanced.toggleDescription')}
         >
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center gap-2">
             <Switch
               id="example-advanced-toggle"
+              aria-describedby="example-advanced-toggle-description"
               checked={exampleAdvancedToggle}
               onCheckedChange={setExampleAdvancedToggle}
             />
@@ -42,11 +44,15 @@ export function AdvancedPane() {
         </SettingsField>
 
         <SettingsField
+          htmlFor="example-dropdown"
           label={t('preferences.advanced.dropdown')}
           description={t('preferences.advanced.dropdownDescription')}
         >
           <Select value={exampleDropdown} onValueChange={setExampleDropdown}>
-            <SelectTrigger>
+            <SelectTrigger
+              id="example-dropdown"
+              aria-describedby="example-dropdown-description"
+            >
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

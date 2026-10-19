@@ -15,10 +15,11 @@
       {
         "label": "main",
         "title": "Tauri ADE",
-        "width": 1200,
-        "height": 800,
-        "minWidth": 1000,
-        "minHeight": 700,
+        "width": 1000,
+        "height": 700,
+        "minWidth": 1280,
+        "minHeight": 800,
+        "preventOverflow": true,
         "resizable": true,
         "fullscreen": false,
         "maximized": false,
@@ -28,7 +29,8 @@
         "transparent": false,
         "shadow": true,
         "dragDropEnabled": true,
-        "visible": false
+        "visible": false,
+        "create": false
       }
     ],
     "security": {

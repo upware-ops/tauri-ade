@@ -1,0 +1,95 @@
+.ade-splash {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  overflow: hidden;
+  border-radius: var(--app-corner-radius, 12px);
+  background: var(--background);
+  color: var(--foreground);
+  user-select: none;
+}
+
+.ade-splash__field {
+  position: absolute;
+  inset: 0;
+}
+
+.ade-splash__artwork {
+  position: relative;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: inherit;
+  container-type: size;
+  background-color: var(--background);
+  background-image: var(--grain-main);
+  background-size: 776px 776px;
+  color: var(--foreground);
+}
+
+.ade-splash__composition {
+  position: relative;
+  width: min(100cqw, calc(100cqh * 10 / 7));
+  aspect-ratio: 10 / 7;
+  container-type: inline-size;
+}
+
+.ade-splash__identity {
+  position: absolute;
+  top: 42.8571%;
+  left: 50%;
+  display: flex;
+  width: min(440px, calc(100% - 32px));
+  transform: translateX(-50%);
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(6px, 1.3cqw, 18px);
+  text-align: center;
+}
+
+.ade-splash__identity h1 {
+  margin: 0;
+  font-family: Inter, sans-serif;
+  font-size: clamp(18px, 3.4cqw, 48px);
+  font-weight: 500;
+  line-height: normal;
+  letter-spacing: -0.12cqw;
+}
+
+.ade-splash__identity p {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-family: 'Geist Mono', monospace;
+  font-size: clamp(9px, 1.2cqw, 14px);
+  font-weight: 400;
+  line-height: normal;
+}
+
+.ade-splash__version {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  margin: 0;
+  color: var(--muted-foreground);
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  opacity: 0.7;
+}
+
+.ade-splash[data-done='true'] {
+  pointer-events: none;
+  animation: ade-splash-exit 300ms ease-out forwards;
+}
+
+@keyframes ade-splash-exit {
+  to {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ade-splash[data-done='true'] {
+    animation: none;
+    opacity: 0;
+  }
+}

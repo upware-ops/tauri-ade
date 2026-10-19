@@ -1,0 +1,33 @@
+.home-screen {
+  display: flex;
+  min-width: 0;
+  min-height: 100%;
+  flex-direction: column;
+  padding: 24px;
+  background-color: var(--background);
+  background-image: var(--grain-main);
+  background-size: 776px 776px;
+}
+
+.home-eyebrow {
+  color: var(--muted-foreground);
+  font-family: var(--font-code);
+  font-size: 10px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+}
+
+.home-empty {
+  min-height: 280px;
+  border: 0;
+  background: transparent;
+}
+
+.app-navigation [data-slot='sidebar'] {
+  min-width: 0;
+  background: transparent;
+}
+
+.app-navigation [data-slot='sidebar-menu-button'] {
+  min-width: 0;
+}

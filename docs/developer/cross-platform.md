@@ -312,6 +312,18 @@ sudo apt-get install -y \
   patchelf
 ```
 
+At runtime the tray needs `libayatana-appindicator3` or `libappindicator3`, and the app aborts at startup without either. It hasn't been verified whether the AppImage bundles it. Stock GNOME shows tray icons only with the AppIndicator extension.
+
+## Menus, Tray and Closing
+
+| Platform | Native menu bar         | Tray                                                              |
+| -------- | ----------------------- | ----------------------------------------------------------------- |
+| macOS    | App, Edit, View, Window | Template icon; the menu opens on click                            |
+| Windows  | None                    | App icon; left-click shows the window, right-click opens the menu |
+| Linux    | None                    | App icon; menu only (AppIndicator has no click events)            |
+
+Closing the main window hides it on every platform; see "App Lifecycle" in [architecture-guide.md](./architecture-guide.md). On Windows, the taskbar's "Close window" also hides it.
+
 ## CSS Considerations
 
 ### Windows Drag Regions

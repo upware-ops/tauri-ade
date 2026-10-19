@@ -6,10 +6,10 @@ Guide to all Tauri plugins installed in this app, plus built-in features and gui
 
 ### Core Functionality
 
-| Plugin              | Purpose                                 | Frontend Package                  |
-| ------------------- | --------------------------------------- | --------------------------------- |
-| **single-instance** | Prevents multiple app instances         | None (Rust-only)                  |
-| **window-state**    | Saves/restores window position and size | `@tauri-apps/plugin-window-state` |
+| Plugin              | Purpose                           | Frontend Package                  |
+| ------------------- | --------------------------------- | --------------------------------- |
+| **single-instance** | Prevents multiple app instances   | None (Rust-only)                  |
+| **window-state**    | Legacy state migration dependency | `@tauri-apps/plugin-window-state` |
 
 ### File System & Storage
 
@@ -41,21 +41,16 @@ Guide to all Tauri plugins installed in this app, plus built-in features and gui
 
 ### Single Instance
 
-Prevents multiple instances of your app from running. When a user tries to open a second instance, the existing window is focused instead.
+Prevents multiple instances of your app from running. When a user tries to open a second instance, the existing window is shown instead, even if it was hidden by closing.
 
 **Configuration** (`src-tauri/src/lib.rs`):
 
 ```rust
 #[cfg(desktop)]
 {
-    app_builder = app_builder.plugin(tauri_plugin_single_instance::init(
-        |app, _args, _cwd| {
-            if let Some(window) = app.get_webview_window("main") {
-                let _ = window.set_focus();
-                let _ = window.unminimize();
-            }
-        },
-    ));
+    app_builder = app_builder.plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+        show_main_window(app);
+    }));
 }
 ```
 
@@ -63,15 +58,7 @@ Prevents multiple instances of your app from running. When a user tries to open 
 
 ### Window State
 
-Automatically saves and restores window position, size, and state (maximized, etc.).
-
-**How it works**:
-
-- Window state is saved when the app closes
-- State is restored when the app opens
-- Only applies to windows listed in capabilities (main window only, not quick-panes)
-
-**No frontend code needed** - works automatically.
+The dependency remains for the legacy state-file name; the plugin is no longer registered. `src-tauri/src/window_state.rs` reads the previous `.window-state.json` only when migrating existing settings, then owns `main-window-state.json`. Normal windows persist size and start centered. Maximized windows also persist their monitor and normal restore positions; fullscreen preserves the last normal size without positions. See [App Readiness and the Splash Screen](./architecture-guide.md#app-readiness-and-the-splash-screen).
 
 ### Context Menus
 
@@ -173,13 +160,13 @@ await openPath('/path/to/document.pdf')
 
 ### System Tray
 
-Built into Tauri v2 via the `tray-icon` feature. See [Tauri docs](https://v2.tauri.app/learn/system-tray/).
+Built into Tauri v2 via the `tray-icon` feature, which is enabled here. The tray is built in `src-tauri/src/commands/tray.rs`. See [Tauri docs](https://v2.tauri.app/learn/system-tray/).
 
 ### App Menus
 
 The Menu API is built into `@tauri-apps/api/menu`. This app uses it for:
 
-- Application menu (File, Edit, View, etc.)
+- Application menu on macOS (App, Edit, View, Window)
 - Context menus via `src/lib/context-menu.ts`
 
 ## Plugins to Consider Adding
@@ -216,9 +203,8 @@ These plugins aren't included by default but are commonly needed:
 The order plugins are registered matters:
 
 1. **single-instance** - Must be first
-2. **window-state** - Before other windowing plugins
-3. **updater** - Desktop only
-4. All other plugins in any order
+2. **updater** - Desktop only
+3. All other plugins in any order
 
 ## References
 

@@ -1,0 +1,178 @@
+[data-slot='shader-surface'] {
+  background-image: var(--shader-fallback);
+  background-size: 100% 100%;
+}
+
+[data-slot='shader-surface']:has(> canvas[data-renderer='webgl']) {
+  background-image: none;
+}
+
+[data-slot='slider'] {
+  --slider-track-size: 4px;
+  --slider-thumb-size: 16px;
+  height: 20px;
+  touch-action: none;
+}
+
+[data-slot='slider'][data-size='sm'] {
+  --slider-track-size: 2px;
+  --slider-thumb-size: 12px;
+}
+
+[data-slot='slider'][data-size='lg'] {
+  --slider-track-size: 6px;
+  --slider-thumb-size: 20px;
+  height: 24px;
+}
+
+[data-slot='slider'][data-disabled='true'],
+[data-slot='input-otp'][data-disabled='true'] {
+  opacity: 0.45;
+}
+
+[data-slot='slider-track'] {
+  position: absolute;
+  inset-inline: 0;
+  height: var(--slider-track-size);
+  overflow: hidden;
+  border-radius: 999px;
+  background-color: var(--secondary);
+}
+
+[data-slot='slider-range'] {
+  position: absolute;
+  inset-inline-start: var(--slider-start);
+  width: calc(var(--slider-end) - var(--slider-start));
+  height: 100%;
+  border-radius: inherit;
+  background-color: var(--primary);
+}
+
+[data-slot='slider-thumb'] {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: calc(var(--slider-thumb-size) / -2);
+  width: calc(100% + var(--slider-thumb-size));
+  height: 100%;
+  margin: 0;
+  appearance: none;
+  background: transparent;
+  pointer-events: none;
+}
+
+[data-slot='slider-thumb']::-webkit-slider-runnable-track {
+  height: var(--slider-track-size);
+  background: transparent;
+}
+
+[data-slot='slider-thumb']::-moz-range-track {
+  height: var(--slider-track-size);
+  background: transparent;
+}
+
+[data-slot='slider-thumb']::-webkit-slider-thumb {
+  width: var(--slider-thumb-size);
+  height: var(--slider-thumb-size);
+  margin-top: calc((var(--slider-track-size) - var(--slider-thumb-size)) / 2);
+  appearance: none;
+  border: 2px solid var(--primary);
+  border-radius: 50%;
+  background-color: var(--background);
+}
+
+[data-slot='slider-thumb']::-moz-range-thumb {
+  width: calc(var(--slider-thumb-size) - 4px);
+  height: calc(var(--slider-thumb-size) - 4px);
+  border: 2px solid var(--primary);
+  border-radius: 50%;
+  background-color: var(--background);
+}
+
+[data-slot='slider-thumb']:focus-visible {
+  outline: none;
+}
+
+[data-slot='slider-thumb']:focus-visible::-webkit-slider-thumb {
+  outline: 2px solid var(--ring);
+  outline-offset: 3px;
+}
+
+[data-slot='slider-thumb']:focus-visible::-moz-range-thumb {
+  outline: 2px solid var(--ring);
+  outline-offset: 3px;
+}
+
+[data-slot='slider'][data-orientation='vertical'] {
+  width: 20px;
+  height: 160px;
+}
+
+[data-slot='slider'][data-orientation='vertical'] [data-slot='slider-track'] {
+  inset-inline-start: 50%;
+  inset-block: 0;
+  transform: translateX(-50%);
+  width: var(--slider-track-size);
+  height: 100%;
+}
+
+[data-slot='slider'][data-orientation='vertical'] [data-slot='slider-range'] {
+  inset-inline-start: 0;
+  inset-block-end: var(--slider-start);
+  width: 100%;
+  height: calc(var(--slider-end) - var(--slider-start));
+}
+
+[data-slot='slider'][data-orientation='vertical'] [data-slot='slider-thumb'] {
+  inset-block-start: calc(var(--slider-thumb-size) / -2);
+  inset-inline-start: 0;
+  width: 100%;
+  height: calc(100% + var(--slider-thumb-size));
+  writing-mode: vertical-lr;
+  direction: rtl;
+}
+
+[data-slot='input-otp-slot'] {
+  width: 40px;
+  height: 40px;
+}
+
+[data-slot='input-otp'][data-size='sm'] [data-slot='input-otp-slot'] {
+  width: 32px;
+  height: 32px;
+  font-size: 14px;
+}
+
+[data-slot='input-otp'][data-size='lg'] [data-slot='input-otp-slot'] {
+  width: 48px;
+  height: 48px;
+  font-size: 18px;
+}
+
+[data-slot='input-otp'][data-invalid='true'] [data-slot='input-otp-slot'] {
+  border-color: var(--destructive);
+}
+
+[data-slot='input-otp-slot'][data-active='true'] {
+  border-color: var(--ring);
+  outline: 3px solid color-mix(in srgb, var(--ring) 35%, transparent);
+}
+
+[data-slot='slider-thumb']::-webkit-slider-thumb {
+  background-image: var(--grain-control);
+  background-size: 776px 776px;
+}
+
+[data-slot='slider-thumb']::-moz-range-thumb {
+  background-image: var(--grain-control);
+  background-size: 776px 776px;
+}
+
+[data-slot='input-otp-slot'] {
+  background-color: var(--control);
+}
+
+.toaster [data-sonner-toast][data-styled='true'] {
+  background-image: var(--grain-control);
+  background-repeat: repeat;
+  background-size: 776px 776px;
+}

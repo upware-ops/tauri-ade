@@ -2,12 +2,14 @@ import { create } from 'zustand'
 import { devtools } from 'zustand/middleware'
 
 interface UIState {
+  activeView: 'home' | 'library'
   leftSidebarVisible: boolean
   rightSidebarVisible: boolean
   commandPaletteOpen: boolean
   preferencesOpen: boolean
   lastQuickPaneEntry: string | null
 
+  setActiveView: (view: 'home' | 'library') => void
   toggleLeftSidebar: () => void
   setLeftSidebarVisible: (visible: boolean) => void
   toggleRightSidebar: () => void
@@ -23,11 +25,15 @@ interface UIState {
 export const useUIStore = create<UIState>()(
   devtools(
     set => ({
+      activeView: 'home',
       leftSidebarVisible: true,
       rightSidebarVisible: true,
       commandPaletteOpen: false,
       preferencesOpen: false,
       lastQuickPaneEntry: null,
+
+      setActiveView: activeView =>
+        set({ activeView, preferencesOpen: false }, undefined, 'setActiveView'),
 
       toggleLeftSidebar: () =>
         set(

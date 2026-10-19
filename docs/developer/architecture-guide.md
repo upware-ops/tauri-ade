@@ -45,8 +45,8 @@ See [state-management.md](./state-management.md) for implementation details.
 Rust and React communicate through events for loose coupling:
 
 ```
-Rust Menu Click → Event Emission → React Listener → Command Execution → State Update
-Keyboard Shortcut → Event Handler → Command Execution → State Update
+Native Menu Click (macOS) → JS menu action → Store Action / app-actions → State Update
+Keyboard Shortcut → Event Handler → Store Action / Command Context → State Update
 Command Palette → Command Selection → Command Execution → State Update
 ```
 
@@ -54,7 +54,7 @@ This ensures the same actions work consistently across all interaction methods.
 
 ### Command-Centric Design
 
-All user actions flow through a centralized [command system](./command-system.md):
+The command palette, the title bar's Settings button and the window controls run actions through a centralized [command system](./command-system.md):
 
 - **Commands** are pure objects with `execute()` functions
 - **Context** provides all state and actions commands need
@@ -125,8 +125,7 @@ src/
 │   ├── commands/        # Command system implementation
 │   └── menu.ts          # Native menu builder with i18n
 ├── services/            # TanStack Query + Tauri integration
-├── store/               # Zustand stores
-└── types/               # Shared TypeScript types
+└── store/               # Zustand stores
 ```
 
 ## Multi-Window Architecture
@@ -154,29 +153,32 @@ See [quick-panes.md](./quick-panes.md) for a complete implementation example.
 
 ### App Readiness and the Splash Screen
 
-The splash is an **overlay sibling of `MainWindow`, not a gate in front of it**. `MainWindow` mounts and does its work underneath the whole time, so the app is warm the moment the splash lifts and nothing in the real tree remounts. This is the same "CSS visibility over conditional rendering" rule described in [state-management.md](./state-management.md).
+The splash has its own native `splash` window and `splash.html` entry. `MainWindow` mounts once in the hidden `main` window and warms up while the splash runs; revealing it does not remount the application.
 
-Readiness is a plain `useState` (`bootReady`) in `App.tsx` — it has exactly one consumer, so it belongs in neither `ui-store` nor a context.
+Both windows call the typed `commands.completeStartup()` command when ready. Rust identifies the caller from its injected window handle and waits for both signals before beginning the native handoff:
 
-```tsx
-void Promise.all([
-  Promise.race([initLanguageAndMenu(), wait(SPLASH_MAX_MS)]),
-  wait(SPLASH_MIN_MS),
-]).then(() => setBootReady(true))
-```
+- `App.tsx` registers the reveal listener before signaling readiness after language/menu initialization, with an 8s ceiling for hung startup IPC. Keeping this coordination outside the error boundary also permits handoff to a rendered error screen.
+- `SplashScreen` waits for at least 5s after its native window is shown and for `ShaderSurface` to complete the shader's first animation period. `NEURAL_MESH_LOOP_SECONDS` supplies both the 5s visible floor and `u_period`; animation time pauses when hidden/offscreen.
+- Reduced motion, unavailable WebGL, shader failures and context loss use the static fallback with the same 5s visible floor.
 
-- `SPLASH_MIN_MS` (2s) is a floor so the splash is never a flicker.
-- `SPLASH_MAX_MS` (8s) is a ceiling for a **hung** IPC. `initLanguageAndMenu` swallows its own errors, so a thrown failure already resolves; the race exists so a stuck call cannot leave the splash up forever on top of an app that is otherwise working.
+The native windows stay hidden until their content is ready to paint. `SplashScreen` shows its own window on mount. A Rust watchdog rescues failed startup after 10s; it leaves a visible splash with a ready main application alone so a paused animation can finish.
 
-`SplashScreen` owns its own exit: when `done` flips it fades, then returns `null`. `App.tsx` renders it unconditionally.
+**Covered handoff.** Both readiness signals apply the main window's final saved bounds while it is hidden, then show it at that size. The splash stays at its original size until it closes; startup performs no animated resizing. On macOS, both windows disable AppKit's automatic show/hide animations so the first visible bounds are final. Main renders behind a matching opaque grain cover. After `startup-reveal`, two animation frames and a main-only `acknowledgeStartupPaint` command hide the splash. `StartupReveal` holds its cover opaque for 300ms, then Motion fades it over 300ms with ease-in-out timing and enables the already-mounted content. Reduced motion skips the hold and fade. The shader retains its 10:7 proportions. A 3s paint watchdog rescues an interrupted bridge; the ordinary 10s startup watchdog remains for earlier failures. Reloaded main roots receive a fresh reveal signal even after startup is complete.
 
-**Hidden until painted.** The main window is created with `"visible": false` and `SplashScreen` calls `getCurrentWindow().show()` on mount, so the first frame the user sees is the splash rather than an empty webview. Three things make that work together:
+**Default and restored bounds.** All four platform configurations set `main.create` and `main.visible` to `false`. Rust computes centered 1000×700 logical-pixel base bounds, scaled down uniformly to fit within 80% of the primary monitor's usable work area. Before main is shown, its native minimum and restoration fitting enlarge these bounds to at least 1280×800 whenever the usable area permits. `window_state.rs` restores normal size and centers the main window on the primary monitor. Only maximized windows save monitor and normal restore positions; fullscreen keeps its mode and the last normal size without positions. Moves stay in memory, settled size/mode changes are saved after 300ms, and close/exit flushes pending state. Typed maximize/fullscreen commands capture normal bounds before changing mode. The prior plugin file is migrated read-only into `main-window-state.json`; neither the splash nor quick pane participates in this record. The splash keeps the calculated base bounds on every launch without inheriting main's minimum. Defaults are content dimensions; decorated native frames are included in the final work-area cap. Main-window minimums are 1280×800 logical pixels, reduced only when the usable area is smaller. Move-only event batches refresh the size limits without clamping the drag position; resize, scale and focus events also fit placement.
 
-- `"visible": false` must be repeated in **all four** `tauri.conf.json` files — JSON Merge Patch replaces arrays wholesale, so each platform override redefines `app.windows` from scratch.
-- `core:window:allow-show` is required in `capabilities/default.json`; `core:window:default` does not include it.
-- `tauri_plugin_window_state` runs with `StateFlags::all() - StateFlags::VISIBLE`. With `VISIBLE` set, the plugin restores the saved visibility and shows the window itself, before the frontend has painted anything.
+Saved maximized windows are fitted against their saved monitor before being shown. Keep startup geometry explicit: GTK setters are queued, and hidden-window getters can still describe the primary monitor.
 
-**Pre-paint theme bootstrap.** `index.html` carries a small inline `<style>` + `<script>` that reads `ui-theme` from `localStorage` and puts `light`/`dark` on `<html>` before React mounts, with `#root` painting `var(--background, <fallback>)`. Without it the first frame is unstyled white regardless of theme. `ThemeProvider` remains the source of truth and re-applies the same class a frame later. The background sits on `#root` with the corner radius rather than on `html`, so macOS window transparency and vibrancy are preserved.
+**Pre-paint theme bootstrap.** `index.html` and `splash.html` read `ui-theme` from `localStorage` before React mounts and paint the matching background and grain. `ThemeProvider` synchronizes persistent preferences afterward. The background and corner radius live on `#root`, preserving macOS transparency and vibrancy.
+
+### App Lifecycle
+
+- **Closing hides.** Closing `main` hides it on every platform (`CloseRequested` in `lib.rs`), and the quick-pane shortcut keeps working. On Windows, the taskbar's "Close window" also hides, because it sends the same close request as the X button.
+- **Quitting.** The app quits through the tray's Quit, the palette's Quit (`exit(0)`), and on macOS through ⌘Q or the Dock menu. Cleanup runs in `RunEvent::Exit`.
+- **Showing `main` from Rust.** Relaunching, the macOS Dock reopen, the tray's Show and the watchdog all call `show_main_window()` in `lib.rs`.
+  - It dispatches to the main thread for native window operations.
+  - A hidden normal window is centered when reopened; visible, maximized and fullscreen windows retain their placement.
+- **Hidden window.** The macOS menu bar stays usable while `main` is hidden. Menu actions that show UI therefore call `getCurrentWindow().show()` first; see [menus.md](./menus.md).
 
 ## Security Architecture
 

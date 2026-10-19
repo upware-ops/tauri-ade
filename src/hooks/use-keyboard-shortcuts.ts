@@ -1,19 +1,31 @@
 import { useEffect } from 'react'
 import { useUIStore } from '@/store/ui-store'
+import { getPlatform } from '@/hooks/use-platform'
+import { toggleFullscreen } from '@/lib/app-actions'
 import type { CommandContext } from '@/lib/commands/types'
 
 /**
  * Handles global keyboard shortcuts for the application.
+ * The modifier is Cmd on macOS and Ctrl elsewhere.
  *
  * Currently handles:
- * - Cmd/Ctrl+, : Open preferences
- * - Cmd/Ctrl+1 : Toggle left sidebar
- * - Cmd/Ctrl+2 : Toggle right sidebar
+ * - Mod+, : Open preferences
+ * - Mod+1 : Toggle left sidebar
+ * - Mod+2 : Toggle right sidebar
+ * - F11 (Windows/Linux) : Toggle fullscreen
  */
 export function useKeyboardShortcuts(commandContext: CommandContext) {
   useEffect(() => {
+    const isMacOS = getPlatform() === 'macos'
+
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.metaKey || e.ctrlKey) {
+      if (!isMacOS && e.key === 'F11') {
+        e.preventDefault()
+        void toggleFullscreen()
+        return
+      }
+
+      if (isMacOS ? e.metaKey : e.ctrlKey) {
         switch (e.key) {
           case ',': {
             e.preventDefault()

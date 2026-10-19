@@ -29,39 +29,45 @@ logger.error('Request failed', { error: response.error })
 ### Rust Backend
 
 - Uses `tauri-plugin-log` with standard Rust `log` crate
-- **Development**: Debug level, logs to stdout + webview console
-- **Production**: Info level, logs to stdout + app log directory
+- **Development**: Debug level
+- **Production**: Info level
+- Both modes log to stdout and the app log directory; non-Linux builds also configure the Webview target
 - Configuration in `src-tauri/src/lib.rs`
 
 ### TypeScript Frontend
 
 - **Development**: All logs go to browser console
-- **Production**: Console logging only (keeps it simple)
+- **Production**: `warn` and `error` are forwarded to the Rust log through `@tauri-apps/plugin-log`, which needs `log:default` in the window's capability; other levels are dropped
+- Pass raw errors in context, for example `logger.error('Action failed', { error })`. Production serialization preserves each `Error`'s stack, falling back to `String(error)` when no stack is available
 - Logger utility at `src/lib/logger.ts`
 
 ## Log Levels
 
-| Level   | When to Use            | Dev | Prod |
-| ------- | ---------------------- | --- | ---- |
-| `trace` | Most verbose debugging | ✅  | ❌   |
-| `debug` | Development debugging  | ✅  | ❌   |
-| `info`  | General information    | ✅  | ✅   |
-| `warn`  | Warning conditions     | ✅  | ✅   |
-| `error` | Error conditions       | ✅  | ✅   |
+| Level   | When to Use            | Rust dev | Rust prod | TypeScript dev | TypeScript prod |
+| ------- | ---------------------- | -------- | --------- | -------------- | --------------- |
+| `trace` | Most verbose debugging | ❌       | ❌        | ✅             | ❌              |
+| `debug` | Development debugging  | ✅       | ❌        | ✅             | ❌              |
+| `info`  | General information    | ✅       | ✅        | ✅             | ❌              |
+| `warn`  | Warning conditions     | ✅       | ✅        | ✅             | ✅              |
+| `error` | Error conditions       | ✅       | ✅        | ✅             | ✅              |
 
 ## Where Logs Appear
 
 ### Development
 
-- **Rust**: Terminal (stdout) + Browser DevTools console (webview)
+- **Rust**: Terminal (stdout) + log file in app log directory
 - **TypeScript**: Browser DevTools console
 
 ### Production
 
 - **Rust**: Terminal (stdout) + log file in app log directory
-- **TypeScript**: Browser DevTools console
+- **TypeScript**: `warn`/`error` in the same log file
 
-Log directory locations vary by platform (e.g., `~/Library/Logs/` on macOS).
+The log file is `Tauri ADE.log` in:
+
+- **macOS:** `~/Library/Logs/com.upware-ops.tauri-ade/`
+- **Windows:** `%LOCALAPPDATA%\com.upware-ops.tauri-ade\logs\`
+- **Linux:** `~/.local/share/com.upware-ops.tauri-ade/logs/`
 
 ## Examples
 
@@ -121,4 +127,4 @@ See [error-handling.md](./error-handling.md) for patterns on when to log vs show
 - Rust logs go to the app's log directory (platform-specific location)
 - No sensitive data should be logged (passwords, tokens, etc.)
 - The plugin supports log rotation when files reach size limits
-- Frontend logs stay in browser - not sent to backend by default
+- Frontend `warn`/`error` reach the log file in production builds; import `{ logger }`, since there are no standalone `info`/`warn` exports

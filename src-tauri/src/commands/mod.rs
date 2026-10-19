@@ -7,3 +7,5 @@ pub mod notifications;
 pub mod preferences;
 pub mod quick_pane;
 pub mod recovery;
+pub mod startup;
+pub mod tray;

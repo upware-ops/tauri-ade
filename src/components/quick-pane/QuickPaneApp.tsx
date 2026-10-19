@@ -1,6 +1,15 @@
 import { useState, useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { emit, listen } from '@tauri-apps/api/event'
 import { getCurrentWindow } from '@tauri-apps/api/window'
+import { MessageSquareText } from 'lucide-react'
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from '@/components/ui/input-group'
+import { Kbd } from '@/components/ui/kbd'
+import i18n from '@/i18n/config'
 import { commands } from '@/lib/tauri-bindings'
 import { logger } from '@/lib/logger'
 
@@ -18,7 +27,7 @@ async function dismissQuickPane() {
  * This component demonstrates the quick pane pattern:
  * - Single text input with submit on Enter
  * - Emits 'quick-pane-submit' event with the entered text
- * - Theme synced with main window via localStorage
+ * - Theme and language synced with main window via localStorage
  * - Hides window on submit or Escape
  */
 // Apply theme from localStorage to document
@@ -39,13 +48,22 @@ function applyTheme() {
   }
 }
 
+function applyLanguage() {
+  const language = localStorage.getItem('ui-language')
+  if (language) {
+    void i18n.changeLanguage(language)
+  }
+}
+
 export default function QuickPaneApp() {
+  const { t } = useTranslation()
   const [text, setText] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
 
-  // Apply theme on mount and listen for theme changes from main window
+  // Apply theme and language on mount and listen for theme changes
   useEffect(() => {
     applyTheme()
+    applyLanguage()
 
     const unlisten = listen('theme-changed', () => {
       applyTheme()
@@ -62,8 +80,9 @@ export default function QuickPaneApp() {
     const unlisten = currentWindow.onFocusChanged(
       async ({ payload: focused }) => {
         if (focused) {
-          // Re-apply theme in case it changed while hidden
+          // Re-apply theme and language in case they changed while hidden
           applyTheme()
+          applyLanguage()
           inputRef.current?.focus()
         } else {
           // Hide window when it loses focus (dismiss on blur)
@@ -107,20 +126,28 @@ export default function QuickPaneApp() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex h-screen w-screen items-center rounded-[var(--app-corner-radius)] border border-border bg-background px-5 shadow-lg"
+      className="quick-pane-surface flex h-dvh w-screen items-center rounded-[var(--app-corner-radius)] border border-border bg-background p-3 text-foreground"
     >
-      <input
-        ref={inputRef}
-        type="text"
-        value={text}
-        onChange={e => setText(e.target.value)}
-        placeholder="Enter text..."
-        className="w-full bg-transparent text-lg text-foreground placeholder:text-muted-foreground outline-none"
-        autoComplete="off"
-        autoCorrect="off"
-        autoCapitalize="off"
-        spellCheck={false}
-      />
+      <InputGroup>
+        <InputGroupAddon>
+          <MessageSquareText aria-hidden="true" />
+        </InputGroupAddon>
+        <InputGroupInput
+          ref={inputRef}
+          type="text"
+          value={text}
+          onChange={e => setText(e.target.value)}
+          aria-label={t('quickPane.placeholder')}
+          placeholder={t('quickPane.placeholder')}
+          autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="off"
+          spellCheck={false}
+        />
+        <InputGroupAddon align="inline-end">
+          <Kbd aria-hidden="true">↵</Kbd>
+        </InputGroupAddon>
+      </InputGroup>
     </form>
   )
 }

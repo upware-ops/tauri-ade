@@ -38,6 +38,7 @@ export default tseslint.config(
       ],
       'react/react-in-jsx-scope': 'off',
       'react/prop-types': 'off',
+      'no-alert': 'error',
       '@typescript-eslint/no-unused-vars': [
         'error',
         {

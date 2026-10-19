@@ -15,8 +15,8 @@ export function GeneralPane() {
   const { t } = useTranslation()
   // Example local state - these are NOT persisted to disk
   // To add persistent preferences:
-  // 1. Add the field to AppPreferences in both Rust and TypeScript
-  // 2. Use usePreferencesManager() and updatePreferences()
+  // 1. Add the field to AppPreferences in src-tauri/src/types.rs and run npm run rust:bindings
+  // 2. Use usePreferences() and useSavePreferences()
   const [exampleText, setExampleText] = useState('Example value')
   const [exampleToggle, setExampleToggle] = useState(true)
 
@@ -86,15 +86,18 @@ export function GeneralPane() {
   }
 
   return (
-    <div className="space-y-6">
+    <div>
       <SettingsSection title={t('preferences.general.keyboardShortcuts')}>
         <SettingsField
+          htmlFor="quick-pane-shortcut"
           label={t('preferences.general.quickPaneShortcut')}
           description={t('preferences.general.quickPaneShortcutDescription')}
         >
           <ShortcutPicker
+            id="quick-pane-shortcut"
+            aria-describedby="quick-pane-shortcut-description"
             value={preferences?.quick_pane_shortcut ?? null}
-            // Fallback matches DEFAULT_QUICK_PANE_SHORTCUT in src-tauri/src/lib.rs
+            // Fallback matches DEFAULT_QUICK_PANE_SHORTCUT in src-tauri/src/types.rs
             defaultValue={defaultShortcut ?? 'CommandOrControl+Shift+.'}
             onChange={handleShortcutChange}
             disabled={!preferences || savePreferences.isPending}
@@ -104,10 +107,13 @@ export function GeneralPane() {
 
       <SettingsSection title={t('preferences.general.exampleSettings')}>
         <SettingsField
+          htmlFor="example-text"
           label={t('preferences.general.exampleText')}
           description={t('preferences.general.exampleTextDescription')}
         >
           <Input
+            id="example-text"
+            aria-describedby="example-text-description"
             value={exampleText}
             onChange={e => setExampleText(e.target.value)}
             placeholder={t('preferences.general.exampleTextPlaceholder')}
@@ -115,12 +121,14 @@ export function GeneralPane() {
         </SettingsField>
 
         <SettingsField
+          htmlFor="example-toggle"
           label={t('preferences.general.exampleToggle')}
           description={t('preferences.general.exampleToggleDescription')}
         >
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center gap-2">
             <Switch
               id="example-toggle"
+              aria-describedby="example-toggle-description"
               checked={exampleToggle}
               onCheckedChange={setExampleToggle}
             />

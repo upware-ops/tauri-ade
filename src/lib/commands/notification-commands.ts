@@ -1,4 +1,5 @@
 import type { AppCommand } from './types'
+import i18n from '@/i18n/config'
 import { notifications } from '@/lib/notifications'
 
 export const notificationCommands: AppCommand[] = [
@@ -9,7 +10,10 @@ export const notificationCommands: AppCommand[] = [
     group: 'debug',
     keywords: ['test', 'toast', 'notification', 'debug'],
     async execute() {
-      await notifications.success('Test Toast', 'This is a test notification')
+      await notifications.success(
+        i18n.t('toast.success.testToast'),
+        i18n.t('toast.success.testToastDescription')
+      )
     },
   },
 ]

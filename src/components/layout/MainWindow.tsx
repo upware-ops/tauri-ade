@@ -9,8 +9,9 @@ import { RightSideBar } from './RightSideBar'
 import { MainWindowContent } from './MainWindowContent'
 import { CommandPalette } from '@/components/command-palette/CommandPalette'
 import { PreferencesDialog } from '@/components/preferences/PreferencesDialog'
-import { Toaster } from 'sonner'
-import { useTheme } from '@/hooks/use-theme'
+import { Toaster } from '@/components/ui/sonner'
+import { AppNavigation } from './AppNavigation'
+import { LibraryInspector } from '@/components/component-library/LibraryInspector'
 import { useUIStore } from '@/store/ui-store'
 import { useMainWindowEventListeners } from '@/hooks/useMainWindowEventListeners'
 import { cn } from '@/lib/utils'
@@ -31,7 +32,7 @@ const MAIN_CONTENT_DEFAULT =
   100 - LAYOUT.leftSidebar.default - LAYOUT.rightSidebar.default
 
 export function MainWindow() {
-  const { theme } = useTheme()
+  const activeView = useUIStore(state => state.activeView)
   const leftSidebarVisible = useUIStore(state => state.leftSidebarVisible)
   const rightSidebarVisible = useUIStore(state => state.rightSidebarVisible)
 
@@ -39,10 +40,10 @@ export function MainWindow() {
   useMainWindowEventListeners()
 
   return (
-    <div className="flex h-screen w-full flex-col overflow-hidden rounded-[var(--app-corner-radius)] bg-background">
+    <div className="flex h-dvh min-h-0 w-full flex-col overflow-hidden rounded-[var(--app-corner-radius)] bg-background">
       <TitleBar />
 
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex min-h-0 flex-1 overflow-hidden">
         <ResizablePanelGroup direction="horizontal">
           <ResizablePanel
             defaultSize={LAYOUT.leftSidebar.default}
@@ -50,7 +51,9 @@ export function MainWindow() {
             maxSize={LAYOUT.leftSidebar.max}
             className={cn(!leftSidebarVisible && 'hidden')}
           >
-            <LeftSideBar />
+            <LeftSideBar className="library-sidebar">
+              <AppNavigation />
+            </LeftSideBar>
           </ResizablePanel>
 
           <ResizableHandle className={cn(!leftSidebarVisible && 'hidden')} />
@@ -70,7 +73,9 @@ export function MainWindow() {
             maxSize={LAYOUT.rightSidebar.max}
             className={cn(!rightSidebarVisible && 'hidden')}
           >
-            <RightSideBar />
+            <RightSideBar className="library-sidebar">
+              {activeView === 'library' && <LibraryInspector />}
+            </RightSideBar>
           </ResizablePanel>
         </ResizablePanelGroup>
       </div>
@@ -78,24 +83,7 @@ export function MainWindow() {
       {/* Global UI Components (hidden until triggered) */}
       <CommandPalette />
       <PreferencesDialog />
-      <Toaster
-        position="bottom-right"
-        theme={
-          theme === 'dark' ? 'dark' : theme === 'light' ? 'light' : 'system'
-        }
-        className="toaster group"
-        toastOptions={{
-          classNames: {
-            toast:
-              'group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg',
-            description: 'group-[.toast]:text-muted-foreground',
-            actionButton:
-              'group-[.toast]:bg-primary group-[.toast]:text-primary-foreground',
-            cancelButton:
-              'group-[.toast]:bg-muted group-[.toast]:text-muted-foreground',
-          },
-        }}
-      />
+      <Toaster position="bottom-right" />
     </div>
   )
 }

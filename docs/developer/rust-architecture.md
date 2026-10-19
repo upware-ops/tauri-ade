@@ -15,7 +15,8 @@ src-tauri/src/
 │   ├── preferences.rs
 │   ├── notifications.rs
 │   ├── quick_pane.rs
-│   └── recovery.rs
+│   ├── recovery.rs
+│   └── tray.rs
 └── utils/           # Utility modules
     ├── mod.rs
     └── platform.rs  # Platform-specific helpers
@@ -141,7 +142,7 @@ Plugins are registered in `lib.rs` during app setup:
 // Desktop-only plugins
 #[cfg(desktop)]
 {
-    app_builder = app_builder.plugin(tauri_plugin_window_state::Builder::new().build());
+    app_builder = app_builder.plugin(tauri_plugin_updater::Builder::new().build());
 }
 
 // All platforms

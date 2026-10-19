@@ -361,3 +361,19 @@ This preserves scroll position, form state, and resize dimensions.
 - Override shadcn components in place (copy and modify instead)
 - Add `cursor-pointer` everywhere (only for actual clickable elements)
 - Use viewport-based responsive design (this is a fixed-size desktop app)
+
+## Component Library Playground
+
+The main window starts on Home. `useUIStore.activeView` switches between Home and the library without persisting that choice. The library is also available at `/library.html` without native IPC. Example state is local: **Reset demo** remounts the examples, and leaving the library discards them. Editing a demo does not restore a deleted task; Undo or Reset does.
+
+Library section links derive their highlight and `aria-current` from the content pane's current section, including scroll and hash navigation. Keep this behavior tied to the actual scrolling pane in both the native app and standalone preview. See [`LibraryNavigation.tsx`](../../src/components/component-library/LibraryNavigation.tsx).
+
+`MainWindow` keeps the viewport fixed while its content pane scrolls. Settings uses the shared `PreferencesDialog`: its header and tabs stay visible while the content scrolls independently. `SettingsField` associates control labels and descriptions. Sheets scroll their body while keeping the close icon reachable; the mobile Sidebar intentionally hides that icon. Preserve that distinction when changing [`SheetContent`](../../src/components/ui/sheet.tsx).
+
+Shared primitives live in `src/components/ui/`. `Tabs` requires either a controlled `value` or an initial `defaultValue`. `TagInput` owns its input type and ref; `inputProps` exposes only the forwarded attributes. `Throbber.ink` is an RGB tuple. Pair `AvatarImage` with `AvatarFallback` so missing or failed images retain fallback content.
+
+The floating quick pane uses shared controls and submits text through `quick-pane-submit`; Home retains the latest entry across view changes. See [Quick Panes](./quick-panes.md) for window ownership.
+
+Theme tokens and grain belong in `theme-variables.css`. Controls use an opaque composite so workspace grain does not bleed through them; repeating grain backgrounds avoid a WebGL context per control. `SplashArtwork` shares the main surface and transparent fallback in both themes. `ShaderSurface` owns GPU resources, pauses hidden/offscreen animation, respects reduced motion and releases resources on unmount. Keep canvas sizing independent of entrance transforms.
+
+`SplashScreen` owns splash readiness; `App` owns main readiness, reveal and paint acknowledgement; Rust owns native window bounds and persistence. Keep the main application mounted through handoff, retain a stable loading announcement, and hide rotating decorative status text from assistive technology. See [App Readiness and the Splash Screen](./architecture-guide.md#app-readiness-and-the-splash-screen) for lifecycle constraints and [`window_state.rs`](../../src-tauri/src/window_state.rs) for restoration behavior; exact dimensions and timing remain with their owners.

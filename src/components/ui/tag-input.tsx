@@ -19,6 +19,11 @@ export interface TagInputProps extends Omit<
   maxTags?: number
   allowDuplicates?: boolean
   disabled?: boolean
+  inputProps?: Omit<
+    React.ComponentProps<'input'>,
+    'value' | 'onChange' | 'disabled' | 'placeholder' | 'type' | 'ref'
+  >
+  removeTagLabel?: (text: string) => string
 }
 
 const TagInput = React.forwardRef<HTMLDivElement, TagInputProps>(
@@ -31,6 +36,8 @@ const TagInput = React.forwardRef<HTMLDivElement, TagInputProps>(
       maxTags,
       allowDuplicates = false,
       disabled = false,
+      inputProps,
+      removeTagLabel,
       ...props
     },
     ref
@@ -94,9 +101,10 @@ const TagInput = React.forwardRef<HTMLDivElement, TagInputProps>(
     return (
       <div
         ref={ref}
+        data-slot="tag-input"
         className={cn(
-          'border-input placeholder:text-muted-foreground focus-within:border-ring focus-within:ring-ring/50 flex min-h-9 w-full rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] focus-within:ring-[3px] md:text-sm',
-          disabled && 'cursor-not-allowed opacity-50',
+          'border-input focus-within:border-ring focus-within:ring-ring/50 flex min-h-9 w-full rounded-md border bg-control px-3 py-1 text-sm shadow-xs transition-[color,box-shadow] focus-within:ring-[3px]',
+          disabled && 'cursor-not-allowed opacity-45',
           className
         )}
         onClick={handleContainerClick}
@@ -117,8 +125,10 @@ const TagInput = React.forwardRef<HTMLDivElement, TagInputProps>(
                     e.stopPropagation()
                     removeTag(tag.id)
                   }}
-                  className="ml-1 hover:bg-destructive/20 rounded-sm p-0.5 transition-colors"
-                  aria-label={`Remove ${tag.text} tag`}
+                  className="ms-1 hover:bg-destructive/20 rounded-sm p-0.5 transition-colors focus-visible:outline-2 focus-visible:outline-ring"
+                  aria-label={
+                    removeTagLabel?.(tag.text) ?? `Remove ${tag.text} tag`
+                  }
                 >
                   <X className="size-3" />
                 </button>
@@ -126,14 +136,21 @@ const TagInput = React.forwardRef<HTMLDivElement, TagInputProps>(
             </Badge>
           ))}
           <input
+            {...inputProps}
             ref={inputRef}
             type="text"
             value={inputValue}
             onChange={e => setInputValue(e.target.value)}
-            onKeyDown={handleKeyDown}
+            onKeyDown={event => {
+              inputProps?.onKeyDown?.(event)
+              if (!event.defaultPrevented) handleKeyDown(event)
+            }}
             placeholder={tags.length === 0 ? placeholder : ''}
             disabled={disabled}
-            className="flex-1 min-w-[120px] bg-transparent border-0 outline-none placeholder:text-muted-foreground text-foreground disabled:cursor-not-allowed"
+            className={cn(
+              'flex-1 min-w-[120px] bg-transparent border-0 outline-none placeholder:text-[var(--text-placeholder)] text-foreground disabled:cursor-not-allowed',
+              inputProps?.className
+            )}
           />
         </div>
       </div>

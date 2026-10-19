@@ -10,28 +10,33 @@ import {
   Submenu,
   PredefinedMenuItem,
 } from '@tauri-apps/api/menu'
-import { check } from '@tauri-apps/plugin-updater'
+import { getCurrentWindow } from '@tauri-apps/api/window'
 import i18n from '@/i18n/config'
+import { getPlatform } from '@/hooks/use-platform'
 import { useUIStore } from '@/store/ui-store'
+import { checkForUpdates, showAbout, toggleFullscreen } from '@/lib/app-actions'
 import { logger } from '@/lib/logger'
 import { notifications } from '@/lib/notifications'
-
-const APP_NAME = 'Tauri ADE'
+import { commands, unwrapResult } from '@/lib/tauri-bindings'
 
 /**
  * Build and set the application menu with translated labels.
+ * Only macOS gets a native menu bar.
  */
-export async function buildAppMenu(): Promise<Menu> {
+export async function buildAppMenu(): Promise<void> {
+  if (getPlatform() !== 'macos') return
+
   const t = i18n.t.bind(i18n)
+  const appName = t('app.name')
 
   try {
     // Build the main application submenu (appears as app name on macOS)
     const appSubmenu = await Submenu.new({
-      text: APP_NAME,
+      text: appName,
       items: [
         await MenuItem.new({
           id: 'about',
-          text: t('menu.about', { appName: APP_NAME }),
+          text: t('menu.about', { appName }),
           action: handleAbout,
         }),
         await PredefinedMenuItem.new({ item: 'Separator' }),
@@ -47,10 +52,15 @@ export async function buildAppMenu(): Promise<Menu> {
           accelerator: 'CmdOrCtrl+,',
           action: handleOpenPreferences,
         }),
+        await MenuItem.new({
+          id: 'component-library',
+          text: t('library.title'),
+          action: handleOpenLibrary,
+        }),
         await PredefinedMenuItem.new({ item: 'Separator' }),
         await PredefinedMenuItem.new({
           item: 'Hide',
-          text: t('menu.hide', { appName: APP_NAME }),
+          text: t('menu.hide', { appName }),
         }),
         await PredefinedMenuItem.new({
           item: 'HideOthers',
@@ -63,7 +73,24 @@ export async function buildAppMenu(): Promise<Menu> {
         await PredefinedMenuItem.new({ item: 'Separator' }),
         await PredefinedMenuItem.new({
           item: 'Quit',
-          text: t('menu.quit', { appName: APP_NAME }),
+          text: t('menu.quit', { appName }),
+        }),
+      ],
+    })
+
+    // Build the Edit submenu
+    const editSubmenu = await Submenu.new({
+      text: t('menu.edit'),
+      items: [
+        await PredefinedMenuItem.new({ item: 'Undo', text: t('menu.undo') }),
+        await PredefinedMenuItem.new({ item: 'Redo', text: t('menu.redo') }),
+        await PredefinedMenuItem.new({ item: 'Separator' }),
+        await PredefinedMenuItem.new({ item: 'Cut', text: t('menu.cut') }),
+        await PredefinedMenuItem.new({ item: 'Copy', text: t('menu.copy') }),
+        await PredefinedMenuItem.new({ item: 'Paste', text: t('menu.paste') }),
+        await PredefinedMenuItem.new({
+          item: 'SelectAll',
+          text: t('menu.selectAll'),
         }),
       ],
     })
@@ -72,6 +99,12 @@ export async function buildAppMenu(): Promise<Menu> {
     const viewSubmenu = await Submenu.new({
       text: t('menu.view'),
       items: [
+        await MenuItem.new({
+          id: 'home',
+          text: t('navigation.home'),
+          action: handleOpenHome,
+        }),
+        await PredefinedMenuItem.new({ item: 'Separator' }),
         await MenuItem.new({
           id: 'toggle-left-sidebar',
           text: t('menu.toggleLeftSidebar'),
@@ -87,16 +120,58 @@ export async function buildAppMenu(): Promise<Menu> {
       ],
     })
 
+    // Build the Window submenu; AppKit's predefined items need a title bar
+    const windowSubmenu = await Submenu.new({
+      text: t('menu.window'),
+      items: [
+        await MenuItem.new({
+          id: 'minimize',
+          text: t('menu.minimize'),
+          accelerator: 'CmdOrCtrl+M',
+          action: () =>
+            void whenMainWindowFocused(
+              () => getCurrentWindow().minimize(),
+              'toast.error.windowMinimizeFailed'
+            ),
+        }),
+        await MenuItem.new({
+          id: 'zoom',
+          text: t('menu.zoom'),
+          action: () =>
+            void whenMainWindowFocused(async () => {
+              unwrapResult(await commands.toggleMainWindowMaximize())
+            }, 'toast.error.windowMaximizeFailed'),
+        }),
+        await PredefinedMenuItem.new({ item: 'Separator' }),
+        await MenuItem.new({
+          id: 'toggle-fullscreen',
+          text: t('menu.toggleFullscreen'),
+          accelerator: 'Ctrl+Cmd+F',
+          action: () => void whenMainWindowFocused(toggleFullscreen),
+        }),
+        await PredefinedMenuItem.new({ item: 'Separator' }),
+        await MenuItem.new({
+          id: 'close-window',
+          text: t('menu.closeWindow'),
+          accelerator: 'CmdOrCtrl+W',
+          action: () =>
+            void whenMainWindowFocused(
+              () => getCurrentWindow().close(),
+              'toast.error.windowCloseFailed'
+            ),
+        }),
+      ],
+    })
+
     // Build the complete menu
     const menu = await Menu.new({
-      items: [appSubmenu, viewSubmenu],
+      items: [appSubmenu, editSubmenu, viewSubmenu, windowSubmenu],
     })
 
     // Set as the application menu
     await menu.setAsAppMenu()
 
     logger.info('Application menu built successfully')
-    return menu
   } catch (error) {
     logger.error('Failed to build application menu', { error })
     throw error
@@ -120,44 +195,81 @@ export function setupMenuLanguageListener(): () => void {
   return () => i18n.off('languageChanged', handler)
 }
 
-// Menu action handlers
+/**
+ * Apply the current language to the tray menu (every desktop platform).
+ */
+export async function syncTrayLabels(): Promise<void> {
+  const t = i18n.t.bind(i18n)
+  const appName = t('app.name')
 
-function handleAbout(): void {
-  logger.info('About menu item clicked')
-  alert(
-    `${APP_NAME}\n\nVersion: ${__APP_VERSION__}\n\nBuilt with Tauri v2 + React + TypeScript`
-  )
-}
-
-async function handleCheckForUpdates(): Promise<void> {
-  logger.info('Check for Updates menu item clicked')
   try {
-    const update = await check()
-    if (update) {
-      notifications.info(
-        'Update Available',
-        `Version ${update.version} is available`
+    unwrapResult(
+      await commands.setTrayLabels(
+        t('tray.show', { appName }),
+        t('menu.quit', { appName })
       )
-    } else {
-      notifications.success('Up to Date', 'You are running the latest version')
-    }
+    )
   } catch (error) {
-    logger.error('Update check failed', { error })
-    notifications.error('Update Check Failed', 'Could not check for updates')
+    logger.error('Failed to set tray labels', { error })
   }
 }
 
+// Menu action handlers
+
+// Unlike AppKit's predefined items, custom items don't follow the key window
+async function whenMainWindowFocused(
+  action: () => Promise<void>,
+  errorKey = 'toast.error.generic'
+): Promise<void> {
+  try {
+    if (await getCurrentWindow().isFocused()) {
+      await action()
+    }
+  } catch (error) {
+    logger.error('Window menu action failed', { error })
+    await notifications.error(
+      i18n.t(errorKey, {
+        message: error instanceof Error ? error.message : String(error),
+      })
+    )
+  }
+}
+
+function handleAbout(): void {
+  logger.info('About menu item clicked')
+  void showAbout()
+}
+
+function handleCheckForUpdates(): void {
+  logger.info('Check for Updates menu item clicked')
+  void checkForUpdates({ interactive: true })
+}
+
+// The menu bar stays usable while the main window is hidden
 function handleOpenPreferences(): void {
   logger.info('Preferences menu item clicked')
+  void getCurrentWindow().show()
   useUIStore.getState().setPreferencesOpen(true)
+}
+
+function handleOpenHome(): void {
+  void getCurrentWindow().show()
+  useUIStore.getState().setActiveView('home')
+}
+
+function handleOpenLibrary(): void {
+  void getCurrentWindow().show()
+  useUIStore.getState().setActiveView('library')
 }
 
 function handleToggleLeftSidebar(): void {
   logger.info('Toggle Left Sidebar menu item clicked')
+  void getCurrentWindow().show()
   useUIStore.getState().toggleLeftSidebar()
 }
 
 function handleToggleRightSidebar(): void {
   logger.info('Toggle Right Sidebar menu item clicked')
+  void getCurrentWindow().show()
   useUIStore.getState().toggleRightSidebar()
 }
