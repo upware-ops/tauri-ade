@@ -2,6 +2,11 @@ import { render, screen, act } from '@/test/test-utils'
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { SplashScreen } from './SplashScreen'
 
+vi.mock('@/components/ui/shader-surface', async importOriginal => ({
+  ...(await importOriginal<object>()),
+  ShaderSurface: () => null,
+}))
+
 const flushVersionFetch = () =>
   act(async () => {
     await Promise.resolve()
@@ -37,6 +42,22 @@ describe('SplashScreen', () => {
     expect(
       screen.getByText('Applying language settings...')
     ).toBeInTheDocument()
+  })
+
+  it('becomes ready at the wall-clock ceiling when the shader loop never completes', async () => {
+    const onReady = vi.fn()
+    render(<SplashScreen done={false} onReady={onReady} />)
+    await flushVersionFetch()
+
+    act(() => {
+      vi.advanceTimersByTime(9_999)
+    })
+    expect(onReady).not.toHaveBeenCalled()
+
+    act(() => {
+      vi.advanceTimersByTime(1)
+    })
+    expect(onReady).toHaveBeenCalledOnce()
   })
 
   it('unmounts itself once done and the fade has elapsed', async () => {
