@@ -24,6 +24,8 @@ type StatusKey = keyof typeof NEXT_STATUS
 const FIRST_STATUS: StatusKey = 'splash.status.preferences'
 const ROTATE_MS = 900
 const SPLASH_FADE_MS = 300
+// WebKit stops animation frames in a covered window, which pauses the shader loop.
+const READY_CEILING_MS = NEURAL_MESH_LOOP_SECONDS * 2000
 
 interface SplashScreenProps {
   done: boolean
@@ -76,6 +78,7 @@ export function SplashScreen({ done, onReady }: SplashScreenProps) {
   useEffect(() => {
     let active = true
     let timer: ReturnType<typeof setTimeout> | undefined
+    let ceiling: ReturnType<typeof setTimeout> | undefined
 
     getCurrentWindow()
       .show()
@@ -85,6 +88,7 @@ export function SplashScreen({ done, onReady }: SplashScreenProps) {
           () => setMinimumElapsed(true),
           NEURAL_MESH_LOOP_SECONDS * 1000
         )
+        ceiling = setTimeout(() => setLoopComplete(true), READY_CEILING_MS)
       })
       .catch(error => {
         logger.error('Failed to show the splash window', { error })
@@ -93,6 +97,7 @@ export function SplashScreen({ done, onReady }: SplashScreenProps) {
     return () => {
       active = false
       clearTimeout(timer)
+      clearTimeout(ceiling)
     }
   }, [])
 
