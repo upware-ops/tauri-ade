@@ -135,7 +135,7 @@ Use the `/cleanup` command for guided analysis and cleanup of both knip and jscp
 
 ## CI Integration
 
-`check:all` runs in CI on Linux. The same workflow also runs `cargo clippy -- -D warnings` and `cargo test` on macOS and Windows, which covers platform-specific Rust. Ensure it passes locally before pushing:
+`check:all` runs in CI on Linux. The same workflow also runs `cargo clippy --locked -- -D warnings` and `cargo test --locked` on macOS and Windows, which covers platform-specific Rust. CI uses the Rust toolchain pinned in `rust-toolchain.toml`. Ensure it passes locally before pushing:
 
 ```bash
 npm run check:all

@@ -208,8 +208,11 @@ function validateChangedFiles() {
 
 function prepareRelease() {
   const args = process.argv.slice(2)
-  if (args.length !== 1 || !BUMPS.has(args[0])) {
-    throw new Error('Usage: npm run release:prepare -- <patch|minor|major>')
+  const skipChecks = args[1] === '--skip-checks'
+  if (args.length !== (skipChecks ? 2 : 1) || !BUMPS.has(args[0])) {
+    throw new Error(
+      'Usage: npm run release:prepare -- <patch|minor|major> [--skip-checks]'
+    )
   }
 
   const bump = args[0]
@@ -223,7 +226,9 @@ function prepareRelease() {
   validateGit(tag)
 
   writeMetadata(metadata, version)
-  run('npm', ['run', 'check:all'])
+  if (!skipChecks) {
+    run('npm', ['run', 'check:all'])
+  }
 
   const updated = readMetadata()
   validateVersions(updated.versions, version)
